@@ -17,11 +17,11 @@ public class RefreshTokenService {
     }
 
     public RefreshToken createRefreshToken(String username) {
-        RefreshToken refreshToken = RefreshToken.builder()
-                .username(username)
-                .expiryDate(Instant.now().plusMillis(refreshTokenDurationMs))
-                .token(UUID.randomUUID().toString())
-                .build();
+        RefreshToken refreshToken = new RefreshToken(
+                username,
+                UUID.randomUUID().toString(),
+                Instant.now().plusMillis(refreshTokenDurationMs)
+        );
 
         refreshTokenDao.save(refreshToken);
 

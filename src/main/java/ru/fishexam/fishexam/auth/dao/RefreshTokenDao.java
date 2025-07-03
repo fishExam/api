@@ -8,15 +8,15 @@ import ru.fishexam.fishexam.auth.models.RefreshToken;
 
 public class RefreshTokenDao {
 
-    private final PostgreSqlJdbcTemplate postgreSqlJdbcTemplate;
+    private final PostgreSqlJdbcTemplate mainDb;
     private static final String tableName = "user_refresh_tokens";
 
-    public RefreshTokenDao(PostgreSqlJdbcTemplate postgreSqlJdbcTemplate) {
-        this.postgreSqlJdbcTemplate = postgreSqlJdbcTemplate;
+    public RefreshTokenDao(PostgreSqlJdbcTemplate mainDb) {
+        this.mainDb = mainDb;
     }
 
     public Optional<RefreshToken> findByToken(String token) {
-         return postgreSqlJdbcTemplate.queryForObjectOptional(
+         return mainDb.queryForObjectOptional(
                 String.format(
                         """
                         SELECT * from %s
@@ -24,17 +24,16 @@ public class RefreshTokenDao {
                         """,
                         tableName
                 ),
-                (rs, num) -> RefreshToken
-                        .builder()
-                        .expiryDate(rs.getTimestamp("expiry_date").toInstant())
-                        .token(token)
-                        .username(rs.getString("username"))
-                        .build(),
+                (rs, num) -> new RefreshToken(
+                        rs.getString("username"),
+                        token,
+                        rs.getTimestamp("expiry_date").toInstant()
+                ),
                 token
         );
     }
     public void deleteByUser(String username) {
-        postgreSqlJdbcTemplate.update(
+        mainDb.update(
                 String.format(
                         """
                         DELETE FROM %s
@@ -47,7 +46,7 @@ public class RefreshTokenDao {
     }
 
     public void save(RefreshToken refreshToken) {
-        postgreSqlJdbcTemplate.update(
+        mainDb.update(
                 String.format(
                         """
                         INSERT INTO %s (refresh_token, username, expiry_date)

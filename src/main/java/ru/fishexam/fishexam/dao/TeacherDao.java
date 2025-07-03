@@ -4,15 +4,15 @@ import ru.fishexam.fishexam.dto.TeacherProfile;
 
 public class TeacherDao {
 
-    private final PostgreSqlJdbcTemplate postgreSqlJdbcTemplate;
+    private final PostgreSqlJdbcTemplate mainDb;
     private final String tableName = "teachers";
 
-    public TeacherDao(PostgreSqlJdbcTemplate postgreSqlJdbcTemplate) {
-        this.postgreSqlJdbcTemplate = postgreSqlJdbcTemplate;
+    public TeacherDao(PostgreSqlJdbcTemplate mainDb) {
+        this.mainDb = mainDb;
     }
 
     public void update(TeacherProfile teacherProfile) {
-        postgreSqlJdbcTemplate.update(
+        mainDb.update(
                 String.format(
                         "INSERT INTO %s (user_id, username, email, name) VALUES (?, ?, ?, ?)",
                         tableName

@@ -7,15 +7,15 @@ import ru.fishexam.fishexam.auth.models.UserAuth;
 
 public class UserDao {
 
-  private final PostgreSqlJdbcTemplate postgreSqlJdbcTemplate;
+  private final PostgreSqlJdbcTemplate mainDb;
   private final String tableName = "users";
 
-  public UserDao(PostgreSqlJdbcTemplate postgreSqlJdbcTemplate) {
-    this.postgreSqlJdbcTemplate = postgreSqlJdbcTemplate;
+  public UserDao(PostgreSqlJdbcTemplate mainDb) {
+    this.mainDb = mainDb;
   }
 
   public Optional<UserAuth> findByUsername(String username) {
-    return postgreSqlJdbcTemplate.queryForObjectOptional(
+    return mainDb.queryForObjectOptional(
             String.format(
                     """
                     SELECT * from %s
@@ -33,7 +33,7 @@ public class UserDao {
   }
 
   public Boolean existsByUsername(String username) {
-    var count = postgreSqlJdbcTemplate.queryForObject(
+    var count = mainDb.queryForObject(
             String.format(
                     """
                             SELECT COUNT(*) FROM %s where username = ?
@@ -48,7 +48,7 @@ public class UserDao {
   }
 
   public UserAuth save(String username, String password) {
-    postgreSqlJdbcTemplate.update(
+    mainDb.update(
             String.format(
                     "INSERT INTO %s (username, password) VALUES (?, ?)",
                     tableName

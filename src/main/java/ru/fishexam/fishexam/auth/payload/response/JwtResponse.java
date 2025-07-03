@@ -1,21 +1,48 @@
 package ru.fishexam.fishexam.auth.payload.response;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-
-
-@Builder
-@AllArgsConstructor
-@Getter
-@Setter
-@Data
 public class JwtResponse {
   private String token;
   private String username;
   private Long userId;
   private String refreshToken;
+
+  public JwtResponse(String token, String username, Long userId, String refreshToken) {
+    this.token = token;
+    this.username = username;
+    this.userId = userId;
+    this.refreshToken = refreshToken;
+  }
+
+  public String getToken() {
+    return this.token;
+  }
+
+  public String getUsername() {
+    return this.username;
+  }
+
+  public Long getUserId() {
+    return this.userId;
+  }
+
+  public String getRefreshToken() {
+    return this.refreshToken;
+  }
+
+  public void setToken(String token) {
+    this.token = token;
+  }
+
+  public void setUsername(String username) {
+    this.username = username;
+  }
+
+  public void setUserId(Long userId) {
+    this.userId = userId;
+  }
+
+  public void setRefreshToken(String refreshToken) {
+    this.refreshToken = refreshToken;
+  }
 }

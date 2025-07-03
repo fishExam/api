@@ -1,20 +1,21 @@
 package ru.fishexam.fishexam.dao;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
-import ru.fishexam.fishexam.auth.models.RefreshToken;
 import ru.fishexam.fishexam.dto.StudentProfile;
 
 public class StudentDao {
-    private final PostgreSqlJdbcTemplate postgreSqlJdbcTemplate;
+    private final PostgreSqlJdbcTemplate mainDb;
     private final String tableName = "students";
 
-    public StudentDao(PostgreSqlJdbcTemplate postgreSqlJdbcTemplate) {
-        this.postgreSqlJdbcTemplate = postgreSqlJdbcTemplate;
+    public StudentDao(PostgreSqlJdbcTemplate mainDb) {
+        this.mainDb = mainDb;
     }
 
     public void update(StudentProfile studentProfile) {
-        postgreSqlJdbcTemplate.update(
+        mainDb.update(
                 String.format(
                         """
                         INSERT INTO %s (user_id, username, email, name)
@@ -34,7 +35,7 @@ public class StudentDao {
     }
 
     public Optional<StudentProfile> getById(Long userId) {
-        return postgreSqlJdbcTemplate.queryForObjectOptional(
+        return mainDb.queryForObjectOptional(
                 String.format(
                         """
                         SELECT * from %s

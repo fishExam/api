@@ -5,6 +5,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import ru.fishexam.fishexam.auth.models.RefreshToken;
 import ru.fishexam.fishexam.auth.models.UserDetailsImpl;
 import ru.fishexam.fishexam.auth.payload.request.LoginRequest;
@@ -45,12 +46,12 @@ public class AuthService {
 
         var refreshToken = refreshTokenService.createRefreshToken(userDetails.getUsername());
 
-        return JwtResponse.builder()
-                .token(jwt)
-                .username(userDetails.getUsername())
-                .userId(userDetails.getUserId())
-                .refreshToken(refreshToken.getToken())
-                .build();
+        return new JwtResponse(
+                jwt,
+                userDetails.getUsername(),
+                userDetails.getUserId(),
+                refreshToken.getToken()
+        );
     }
 
     public UserProfile registerUser(SignupRequest signUpRequest) {
@@ -74,12 +75,12 @@ public class AuthService {
                     String token = jwtUtils.generateTokenFromUsername(username);
                     var user = userDao.findByUsername(username).orElseThrow();
 
-                    return JwtResponse.builder()
-                            .token(token)
-                            .username(username)
-                            .userId(user.getUserid())
-                            .refreshToken(requestRefreshToken)
-                            .build();
+                    return new JwtResponse(
+                            token,
+                            username,
+                            user.getUserid(),
+                            requestRefreshToken
+                    );
                 })
                 .orElseThrow(() -> new RuntimeException(requestRefreshToken + "Refresh token not found!"));
     }

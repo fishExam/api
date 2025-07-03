@@ -2,13 +2,9 @@ package ru.fishexam.fishexam.auth.models;
 
 import java.util.Collection;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-@Getter
-@EqualsAndHashCode
 public class UserDetailsImpl implements UserDetails {
   private static final long serialVersionUID = 1L;
 
@@ -63,4 +59,7 @@ public class UserDetailsImpl implements UserDetails {
     return true;
   }
 
+  public Long getUserId() {
+    return userId;
+  }
 }

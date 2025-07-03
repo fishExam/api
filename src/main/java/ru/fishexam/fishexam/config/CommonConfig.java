@@ -13,13 +13,13 @@ import ru.fishexam.fishexam.service.UserProfileService;
 public class CommonConfig {
 
     @Bean
-    public TeacherDao teacherDao(PostgreSqlJdbcTemplate postgreSqlJdbcTemplate) {
-        return new TeacherDao(postgreSqlJdbcTemplate);
+    public TeacherDao teacherDao(PostgreSqlJdbcTemplate mainDb) {
+        return new TeacherDao(mainDb);
     }
 
     @Bean
-    public StudentDao studentDao(PostgreSqlJdbcTemplate postgreSqlJdbcTemplate) {
-        return new StudentDao(postgreSqlJdbcTemplate);
+    public StudentDao studentDao(PostgreSqlJdbcTemplate mainDb) {
+        return new StudentDao(mainDb);
     }
 
     @Bean

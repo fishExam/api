@@ -18,13 +18,13 @@ import ru.fishexam.fishexam.service.UserProfileService;
 public class CommonSecurityConfig {
 
     @Bean
-    public RefreshTokenDao refreshTokenRepository(PostgreSqlJdbcTemplate postgreSqlJdbcTemplate) {
-        return new RefreshTokenDao(postgreSqlJdbcTemplate);
+    public RefreshTokenDao refreshTokenRepository(PostgreSqlJdbcTemplate mainDb) {
+        return new RefreshTokenDao(mainDb);
     }
 
     @Bean
-    public UserDao userRepository(PostgreSqlJdbcTemplate postgreSqlJdbcTemplate) {
-        return new UserDao(postgreSqlJdbcTemplate);
+    public UserDao userRepository(PostgreSqlJdbcTemplate mainDb) {
+        return new UserDao(mainDb);
     }
 
     @Bean

@@ -13,4 +13,23 @@ public class CommonMappers {
         studentProfile.setName(studentProfileRequest.name());
         return studentProfile;
     }
+
+    public static StudentProfile mergeTwoStudentProfile(
+            StudentProfile oldStudentProfile,
+            StudentProfile newStudentProfile
+    ) {
+        if (newStudentProfile.getUsername() != null) {
+            oldStudentProfile.setUsername(newStudentProfile.getUsername());
+        }
+
+        if (newStudentProfile.getEmail() != null) {
+            oldStudentProfile.setEmail(newStudentProfile.getEmail());
+        }
+
+        if (newStudentProfile.getName() != null) {
+            oldStudentProfile.setName(newStudentProfile.getName());
+        }
+
+        return oldStudentProfile;
+    }
 }
