@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16.4
+    networks:
+      - backend_network
+    container_name: db
+    hostname: db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: rootuser
+      POSTGRES_PASSWORD: rootpass
+      POSTGRES_DB: db
+    ports:
+      - "32768:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+networks:
+  backend_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
