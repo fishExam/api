@@ -22,7 +22,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
 
     return new UserDetailsImpl(
-            user.getUsername(),
+            user.getSurname(),
             user.getUserid(),
             user.getPassword(),
             List.of()

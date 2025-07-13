@@ -8,10 +8,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import ru.fishexam.fishexam.dto.StudentProfile;
-import ru.fishexam.fishexam.dto.StudentProfileRequest;
-import ru.fishexam.fishexam.dto.UserProfile;
+import ru.fishexam.fishexam.dto.*;
 import ru.fishexam.fishexam.service.StudentService;
+
+import java.util.List;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -22,7 +22,7 @@ public class StudentController {
       this.studentService = studentService;
   }
 
-  @GetMapping("/api/profile/{userId}")
+  @GetMapping("/api/profileSt/{userId}")
   @PreAuthorize("@dataSecurityService.isOwner(#userId)")
   public ResponseEntity<UserProfile> userAccess(
           @PathVariable Long userId
@@ -30,13 +30,49 @@ public class StudentController {
     return ResponseEntity.ok(studentService.getById(userId));
   }
 
-  @PostMapping("/api/profile/{userId}")
+  @PostMapping("/api/profileSt/{userId}")
   @PreAuthorize("@dataSecurityService.isOwner(#userId)")
   public ResponseEntity<StudentProfile> updateProfile(
           @PathVariable Long userId,
           @RequestBody StudentProfileRequest studentProfileRequest
   ) {
     return ResponseEntity.ok(studentService.updateStudentProfile(userId, studentProfileRequest));
+  }
+
+  // Добавление собственных интересов и хобби
+  @PostMapping("/api/hobby/{userId}")
+  @PreAuthorize("@dataSecurityService.isOwner(#userId)")
+  public ResponseEntity<HobbyStudentRelations> createHobby(
+          @PathVariable Long userId,
+          @RequestBody HobbyModelRequest hobbyModelRequest
+          ) {
+    return ResponseEntity.ok(studentService.createHobby(userId, hobbyModelRequest));
+  }
+
+  // Просмотр заданных домашних заданий
+  @GetMapping("/api/homework/{userId}")
+  @PreAuthorize("@dataSecurityService.isOwner(#userId)")
+  public ResponseEntity<List<HomeworkModel>> getAssignedHomeworks(@PathVariable Long userId) {
+    return ResponseEntity.ok(studentService.getAssignedHomeworks(userId));
+  }
+
+  // Просмотр собственной статистики по выполненным домашним заданиям
+  @GetMapping("/api/statisticSt/{userId}")
+  @PreAuthorize("@dataSecurityService.isOwner(#userId)")
+  public ResponseEntity<StudentProfile> getStudentStatistics(@PathVariable Long userId) {
+    return ResponseEntity.ok(studentService.getStudentStatistics(userId));
+  }
+
+  // Добавление решения задачи
+  @PostMapping("/api/answer/{userId}/{homeworkId}/{taskId}")
+  @PreAuthorize("@dataSecurityService.isOwner(#userId)")
+  public ResponseEntity<StudentAnswers> submitAnswer(
+          @PathVariable Long userId,
+          @PathVariable Long homeworkId,
+          @PathVariable Long taskId,
+          @RequestBody StudentAnswersRequest answerRequest
+  ) {
+    return ResponseEntity.ok(studentService.submitAnswer(userId, homeworkId, taskId, answerRequest));
   }
 
 }

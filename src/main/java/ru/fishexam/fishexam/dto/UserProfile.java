@@ -1,14 +1,13 @@
 package ru.fishexam.fishexam.dto;
 
 import jakarta.annotation.Nullable;
+import org.springframework.data.relational.core.mapping.Table;
 
 public class UserProfile {
     private Long userId;
     private String username;
     @Nullable
     private String email;
-    @Nullable
-    private String name;
 
     public UserProfile() {
     }
@@ -35,13 +34,5 @@ public class UserProfile {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 }

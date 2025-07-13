@@ -1,9 +1,13 @@
 package ru.fishexam.fishexam.auth.dao;
 
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.Optional;
 
 import ru.fishexam.fishexam.dao.PostgreSqlJdbcTemplate;
 import ru.fishexam.fishexam.auth.models.UserAuth;
+import ru.fishexam.fishexam.dto.TeacherProfile;
+import ru.fishexam.fishexam.dto.UserProfile;
 
 public class UserDao {
 
@@ -26,6 +30,12 @@ public class UserDao {
             (rs, num) -> new UserAuth(
                     rs.getLong("user_id"),
                     rs.getString("username"),
+                    rs.getString("first_name"),
+                    rs.getString("patronymic"),
+                    rs.getString("phone"),
+                    rs.getString("email"),
+                    rs.getDate("birth").toLocalDate(),
+                    rs.getString("telegram_id"),
                     rs.getString("password")
             ),
             username
@@ -47,16 +57,55 @@ public class UserDao {
     return count != null && count > 0;
   }
 
-  public UserAuth save(String username, String password) {
+  public UserAuth save(String username, String first_name, String patronymic, String phone,
+                       String email, LocalDate birth, String telegram_id, String password) {
     mainDb.update(
             String.format(
-                    "INSERT INTO %s (username, password) VALUES (?, ?)",
+                    "INSERT INTO %s (username, first_name, patronymic, phone, email, birth, telegram_id, password)" +
+                            "VALUES (?, ?, ?, ?, ?, ?::date, ?, ?)",
                     tableName
             ),
             username,
+            first_name,
+            patronymic,
+            phone,
+            email,
+            birth,
+            telegram_id,
             password
     );
 
     return findByUsername(username).orElseThrow();
+  }
+
+  public void update(UserAuth userAuth) {
+    mainDb.update(
+            String.format(
+                    """
+                        INSERT INTO %s (user_id, username, first_name, patronymic, phone, email,
+                        birth, telegram_id, password)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ON CONFLICT (user_id) DO UPDATE SET
+                        username = EXCLUDED.username,
+                        first_name = EXCLUDED.first_name,
+                        patronymic = EXCLUDED.patronymic,
+                        phone = EXCLUDED.phone,
+                        email = EXCLUDED.email,
+                        birth = EXCLUDED.birth,
+                        telegram_id = EXCLUDED.telegram_id,
+                        password = EXCLUDED.password
+                    """,
+                    tableName
+            ),
+            userAuth.getUserid(),
+            userAuth.getSurname(),
+            userAuth.getFirst_name(),
+            userAuth.getPatronymic(),
+            userAuth.getPhone(),
+            userAuth.getEmail(),
+            userAuth.getBirth(),
+            userAuth.getTelegram_id(),
+            userAuth.getPassword()
+    );
   }
 }

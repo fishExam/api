@@ -61,8 +61,12 @@ public class AuthService {
 
         String hashedPassword = passwordEncoder.encode(signUpRequest.password());
 
-        var saved = userDao.save(signUpRequest.username(), hashedPassword);
-        return userProfileService.createBaseProfile(saved.getUserid(), saved.getUsername(), signUpRequest.userRole());
+        var saved = userDao.save(signUpRequest.username(), signUpRequest.first_name(), signUpRequest.patronymic(),
+                signUpRequest.phone(), signUpRequest.email(), signUpRequest.birth(), signUpRequest.telegram_id(),
+                hashedPassword);
+        return userProfileService.createBaseProfile(saved.getUserid(), saved.getSurname(),saved.getFirst_name(),
+                saved.getPatronymic(), saved.getPhone(), saved.getEmail(), saved.getBirth(), saved.getTelegram_id(),
+                signUpRequest.userRole());
     }
 
     public JwtResponse refreshToken(TokenRefreshRequest request) {
