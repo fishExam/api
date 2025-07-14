@@ -128,6 +128,7 @@ public class TeacherController {
     @PostMapping("/api/gamification/{teacherId}/{studentId}/{taskId}")
     @PreAuthorize("@dataSecurityService.isOwner(#teacherId)")
     public ResponseEntity<TaskModel> gamifyErrorCorrectionTask(
+            @PathVariable Long teacherId,
             @PathVariable Long studentId,
             @PathVariable Long taskId) {
         return ResponseEntity.ok(teacherService.gamifyErrorCorrectionTask(studentId, taskId));

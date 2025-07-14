@@ -72,7 +72,6 @@ CREATE TABLE IF NOT EXISTS homework_user (
     homework_user_id BIGSERIAL PRIMARY KEY,
     homework_id BIGINT NOT NULL,
     student_id BIGINT NOT NULL,
-    UNIQUE (homework_id, student_id),
     FOREIGN KEY (homework_id) REFERENCES homework(homework_id),
     FOREIGN KEY (student_id) REFERENCES students(student_id)
 );
@@ -98,7 +97,7 @@ CREATE TABLE IF NOT EXISTS student_answers (
     homework_user_id BIGINT NOT NULL,
     task_id BIGINT NOT NULL,
     student_answer VARCHAR(255) NOT NULL,
-    is_correct BOOLEAN,
+    is_correct BOOLEAN NOT NULL,
     feedback TEXT,
     update_time TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (homework_user_id) REFERENCES homework_user(homework_user_id),

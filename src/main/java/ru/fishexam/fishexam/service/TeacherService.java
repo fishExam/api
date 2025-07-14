@@ -140,6 +140,18 @@ public class TeacherService {
         homeworkUserRealations.setStudentId(studentId);
         homeworkUserRealations.setHomeworkId(homeworkId);
         homeworkUserRelationsDao.update(homeworkUserRealations);
+        HomeworkModel homeworkModel = homeworkModelDao.getById(homeworkId).orElseThrow();
+        assert homeworkModel.getDescription() != null;
+        String[] tasks = homeworkModel.getDescription().split(" ");
+        for (String task : tasks){
+            StudentAnswers studentAnswers = new StudentAnswers();
+            System.out.println(homeworkUserRealations.getHomeworkUserId() + "       15hw");
+            studentAnswers.setHomeworkUserId(homeworkUserRealations.getHomeworkUserId());
+            studentAnswers.setTaskId((long) Integer.parseInt(task));
+            studentAnswers.setStudentAnswer(null);
+            studentAnswers.setCorrect(false);
+            studentAnswersDao.update(studentAnswers);
+        }
         return homeworkUserRealations;
     }
 
@@ -173,7 +185,7 @@ public class TeacherService {
             stat.setFirstName(student.getFirstName());
             stat.setSurname(student.getSurname());
             List<StudentAnswers> answers = studentAnswersDao.getAnswersByStudentId(studentId);
-            int totalTasks = answers.size();
+            int totalTasks = (int) answers.stream().filter(a -> a.getStudentAnswer()!=null).count();
             int correctTasks = (int) answers.stream().filter(StudentAnswers::getIsCorrect).count();
             stat.setTotalTasks(totalTasks);
             stat.setCorrectTasks(correctTasks);

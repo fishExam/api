@@ -85,4 +85,31 @@ public class StudentAnswersDao {
                 studentId
         );
     }
+
+    public List<StudentAnswers> getHomeworkByStudentId(Long studentId, Long homeworkId) {
+        return mainDb.query(
+                String.format(
+                        """
+                                SELECT sa.*
+                                FROM %s sa
+                                JOIN homework_user hu ON sa.homework_user_id = hu.homework_user_id
+                                WHERE hu.student_id = ? AND hu.homework_id = ?
+                                ORDER BY sa.update_time DESC
+                                """,
+                        tableName
+                ),
+                (rs, num) -> {
+                    var result = new StudentAnswers();
+                    result.setStudentAnswersId(rs.getLong("student_answers_id"));
+                    result.setHomeworkUserId(rs.getLong("homework_user_id"));
+                    result.setTaskId(rs.getLong("task_id"));
+                    result.setStudentAnswer(rs.getString("student_answer"));
+                    result.setCorrect(rs.getBoolean("is_correct"));
+                    result.setFeedback(rs.getString("feedback"));
+                    return result;
+                },
+                studentId,
+                homeworkId
+        );
+    }
 }
