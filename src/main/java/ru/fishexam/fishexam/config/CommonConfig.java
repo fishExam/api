@@ -94,7 +94,7 @@ public class CommonConfig {
 
     @Bean
     public GigaChatAuthService gigaChatAuthService(CloseableHttpClient httpClient) {
-        return new GigaChatAuthService(httpClient, clientId, clientSecret, authUrl);
+        return new GigaChatAuthService(httpClient);
     }
 
     @Bean

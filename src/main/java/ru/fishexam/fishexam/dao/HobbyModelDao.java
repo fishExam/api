@@ -53,8 +53,8 @@ public class HobbyModelDao {
                 String.format(
                         """
                                 SELECT topic from %s hs
-                                JOIN hobby h ON h.hobby_id = hs.hobby_id
-                                WHERE hs.student_id = ?
+                                JOIN hobby_student h ON h.hobby_id = hs.hobby_id
+                                WHERE h.student_id = ?
                                 """,
                         tableName
                 ),
