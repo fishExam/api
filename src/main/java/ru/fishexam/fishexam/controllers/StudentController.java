@@ -8,7 +8,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import ru.fishexam.fishexam.dto.*;
+import ru.fishexam.fishexam.dto.hobby.HobbyModel;
+import ru.fishexam.fishexam.dto.hobby.HobbyModelRequest;
+import ru.fishexam.fishexam.dto.hobby.HobbyStudentRelations;
+import ru.fishexam.fishexam.dto.homework.HomeworkModel;
+import ru.fishexam.fishexam.dto.student.StudentAnswers;
+import ru.fishexam.fishexam.dto.student.StudentAnswersRequest;
+import ru.fishexam.fishexam.dto.student.StudentProfile;
+import ru.fishexam.fishexam.dto.student.StudentProfileRequest;
+import ru.fishexam.fishexam.dto.user.UserProfile;
 import ru.fishexam.fishexam.service.StudentService;
 
 import java.util.List;
@@ -42,7 +50,7 @@ public class StudentController {
   // Добавление собственных интересов и хобби
   @PostMapping("/api/hobby/{userId}")
   @PreAuthorize("@dataSecurityService.isOwner(#userId)")
-  public ResponseEntity<HobbyStudentRelations> createHobby(
+  public ResponseEntity<List<HobbyModel>> createHobby(
           @PathVariable Long userId,
           @RequestBody HobbyModelRequest hobbyModelRequest
           ) {

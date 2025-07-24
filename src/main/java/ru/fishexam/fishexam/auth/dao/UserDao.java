@@ -1,13 +1,10 @@
 package ru.fishexam.fishexam.auth.dao;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.Optional;
 
 import ru.fishexam.fishexam.dao.PostgreSqlJdbcTemplate;
 import ru.fishexam.fishexam.auth.models.UserAuth;
-import ru.fishexam.fishexam.dto.TeacherProfile;
-import ru.fishexam.fishexam.dto.UserProfile;
 
 public class UserDao {
 
@@ -23,13 +20,13 @@ public class UserDao {
             String.format(
                     """
                     SELECT * from %s
-                    WHERE username = ?
+                    WHERE surname = ?
                     """,
                     tableName
             ),
             (rs, num) -> new UserAuth(
                     rs.getLong("user_id"),
-                    rs.getString("username"),
+                    rs.getString("surname"),
                     rs.getString("first_name"),
                     rs.getString("patronymic"),
                     rs.getString("phone"),
@@ -46,7 +43,7 @@ public class UserDao {
     var count = mainDb.queryForObject(
             String.format(
                     """
-                            SELECT COUNT(*) FROM %s where username = ?
+                            SELECT COUNT(*) FROM %s where surname = ?
                     """,
                     tableName
             ),
@@ -61,7 +58,7 @@ public class UserDao {
                        String email, LocalDate birth, String telegram_id, String password) {
     mainDb.update(
             String.format(
-                    "INSERT INTO %s (username, first_name, patronymic, phone, email, birth, telegram_id, password)" +
+                    "INSERT INTO %s (surname, first_name, patronymic, phone, email, birth, telegram_id, password)" +
                             "VALUES (?, ?, ?, ?, ?, ?::date, ?, ?)",
                     tableName
             ),
@@ -82,11 +79,11 @@ public class UserDao {
     mainDb.update(
             String.format(
                     """
-                        INSERT INTO %s (user_id, username, first_name, patronymic, phone, email,
+                        INSERT INTO %s (user_id, surname, first_name, patronymic, phone, email,
                         birth, telegram_id, password)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                         ON CONFLICT (user_id) DO UPDATE SET
-                        username = EXCLUDED.username,
+                        surname = EXCLUDED.surname,
                         first_name = EXCLUDED.first_name,
                         patronymic = EXCLUDED.patronymic,
                         phone = EXCLUDED.phone,

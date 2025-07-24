@@ -1,10 +1,9 @@
 package ru.fishexam.fishexam.service;
 
-import ru.fishexam.fishexam.dto.UserProfile;
-import ru.fishexam.fishexam.dto.UserRole;
+import ru.fishexam.fishexam.dto.user.UserProfile;
+import ru.fishexam.fishexam.dto.user.UserRole;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 
 public class UserProfileService {

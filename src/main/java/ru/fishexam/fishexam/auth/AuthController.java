@@ -12,7 +12,7 @@ import ru.fishexam.fishexam.auth.payload.request.SignupRequest;
 import ru.fishexam.fishexam.auth.payload.request.TokenRefreshRequest;
 import ru.fishexam.fishexam.auth.payload.response.JwtResponse;
 import ru.fishexam.fishexam.auth.services.AuthService;
-import ru.fishexam.fishexam.dto.UserProfile;
+import ru.fishexam.fishexam.dto.user.UserProfile;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController

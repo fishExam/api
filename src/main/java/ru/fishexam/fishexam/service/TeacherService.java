@@ -1,11 +1,35 @@
 package ru.fishexam.fishexam.service;
 
-import org.apache.http.client.methods.HttpPost;
 import org.springframework.transaction.annotation.Transactional;
 import ru.fishexam.fishexam.auth.dao.UserDao;
 import ru.fishexam.fishexam.auth.models.UserAuth;
-import ru.fishexam.fishexam.dao.*;
-import ru.fishexam.fishexam.dto.*;
+import ru.fishexam.fishexam.dao.hobby.HobbyModelDao;
+import ru.fishexam.fishexam.dao.homework.HomeworkModelDao;
+import ru.fishexam.fishexam.dao.homework.HomeworkTaskRelationsDao;
+import ru.fishexam.fishexam.dao.homework.HomeworkUserRelationsDao;
+import ru.fishexam.fishexam.dao.outline.OutlineCreateDao;
+import ru.fishexam.fishexam.dao.outline.OutlineStudentRelationsDao;
+import ru.fishexam.fishexam.dao.student.StudentAnswersDao;
+import ru.fishexam.fishexam.dao.student.StudentDao;
+import ru.fishexam.fishexam.dao.task.TaskModelDao;
+import ru.fishexam.fishexam.dao.teacher.TeacherDao;
+import ru.fishexam.fishexam.dao.teacher.TeacherStudentsDao;
+import ru.fishexam.fishexam.dto.homework.HomeworkModel;
+import ru.fishexam.fishexam.dto.homework.HomeworkModelRequest;
+import ru.fishexam.fishexam.dto.homework.HomeworkTaskRelations;
+import ru.fishexam.fishexam.dto.homework.HomeworkUserRelations;
+import ru.fishexam.fishexam.dto.outline.OutlineCreate;
+import ru.fishexam.fishexam.dto.outline.OutlineCreateRequest;
+import ru.fishexam.fishexam.dto.outline.OutlineStudentRelation;
+import ru.fishexam.fishexam.dto.student.StudentAnswers;
+import ru.fishexam.fishexam.dto.student.StudentAnswersRequest;
+import ru.fishexam.fishexam.dto.student.StudentProfile;
+import ru.fishexam.fishexam.dto.student.StudentStatistics;
+import ru.fishexam.fishexam.dto.task.TaskModel;
+import ru.fishexam.fishexam.dto.task.TaskModelRequest;
+import ru.fishexam.fishexam.dto.teacher.TeacherProfile;
+import ru.fishexam.fishexam.dto.teacher.TeacherProfileRequest;
+import ru.fishexam.fishexam.dto.teacher.TeacherStudentsRelations;
 import ru.fishexam.fishexam.gigachat.service.GigaChatAuthService;
 import ru.fishexam.fishexam.gigachat.service.GigaChatService;
 import ru.fishexam.fishexam.utils.CommonMappers;
@@ -50,16 +74,14 @@ public class TeacherService {
 
     public TeacherProfile createBaseTeacherProfile(Long userId, String username, String first_name, String patronymic,
                                                    String phone, String email, LocalDate birth, String telegram_id) {
-        TeacherProfile teacherProfile = new TeacherProfile();
-        teacherProfile.setTeacherId(userId);
-        teacherProfile.setSurname(username);
-        teacherProfile.setFirstName(first_name);
-        teacherProfile.setPatronymic(patronymic);
-        teacherProfile.setPhone(phone);
-        teacherProfile.setEmail(email);
-        teacherProfile.setBirth(birth);
-        teacherProfile.setTelegramId(telegram_id);
-        teacherDao.update(teacherProfile);
+        TeacherProfile teacherProfile = new TeacherProfile(userId,
+                username,
+                first_name,
+                patronymic,
+                phone,
+                email,
+                birth,
+                telegram_id);
         return teacherProfile;
     }
 
@@ -85,74 +107,65 @@ public class TeacherService {
         return teacherDao.getById(userId).orElseThrow();
     }
 
-    public TeacherStudentsRelations assignStudent(Long teacherId, Long studentId) {
+    public List<StudentProfile> assignStudent(Long teacherId, Long studentId) {
+        if (teacherStudentsDao.existsByUsername(studentId, teacherId))
+            throw new RuntimeException("This student was already attached to the teacher");
         TeacherStudentsRelations teacherStudentsRelations = new TeacherStudentsRelations();
         teacherStudentsRelations.setTeacherId(teacherId);
         teacherStudentsRelations.setStudentId(studentId);
-        teacherStudentsDao.update(teacherStudentsRelations);
-        return teacherStudentsRelations;
+        List<StudentProfile> students = teacherStudentsDao.save(teacherStudentsRelations);
+        return students;
     }
 
     public OutlineCreate createOutline(Long teacherId, OutlineCreateRequest outlineCreateRequest) {
-        OutlineCreate outlineCreate = new OutlineCreate();
-        outlineCreate.setAuthorId(teacherId);
-        outlineCreate.setTitle(outlineCreateRequest.title());
-        outlineCreateDao.update(outlineCreate);
+        if (outlineCreateDao.existsByUsername(teacherId, outlineCreateRequest.title()))
+            throw  new RuntimeException("This title was created by a teacher");
+        OutlineCreate outlineCreate = outlineCreateDao.save(teacherId, outlineCreateRequest.title()).orElseThrow();
         return outlineCreate;
 
     }
 
-    public OutlineStudentRelation assignOutline(Long studentId, Long outlineId) {
-        OutlineStudentRelation outlineStudentRelation = new OutlineStudentRelation();
-        outlineStudentRelation.setStudentId(studentId);
-        outlineStudentRelation.setOutlineId(outlineId);
-        outlineStudentRelationsDao.update(outlineStudentRelation);
-        return outlineStudentRelation;
+    public OutlineCreate assignOutline(Long studentId, Long outlineId) {
+        if (outlineStudentRelationsDao.existsByOutlineStudent(studentId, outlineId))
+            throw new RuntimeException("This outline was already attached to the student");
+        OutlineCreate outlineCreate = outlineStudentRelationsDao.save(studentId, outlineId);
+        return outlineCreate;
     }
 
     public TaskModel createTask(Long teacherId, TaskModelRequest taskModelRequest) {
-        TaskModel taskModel = new TaskModel();
-        taskModel.setAuthorId(teacherId);
-        taskModel.setTitle(taskModelRequest.title());
-        taskModel.setAnswer(taskModelRequest.answer());
-        taskModelDao.update(taskModel);
+        if (taskModelDao.existsByTaskTeacher(teacherId, taskModelRequest.title()))
+            throw  new RuntimeException("This title was used in another task");
+        TaskModel taskModel = taskModelDao.save(teacherId,
+                taskModelRequest.title(),
+                taskModelRequest.answer());
         return taskModel;
     }
 
     public HomeworkModel createHomework(Long teacherId, HomeworkModelRequest homeworkModelRequest) {
-        HomeworkModel homeworkModel = new HomeworkModel();
-        homeworkModel.setAuthorId(teacherId);
-        homeworkModel.setDescription(homeworkModelRequest.description());
-        homeworkModelDao.update(homeworkModel);
+        if (homeworkModelDao.existsByHomework(teacherId, homeworkModelRequest.description()))
+            throw new RuntimeException("This description was already attached");
+        if (homeworkModelDao.existsTaskByHomework(homeworkModelRequest.description()))
+            throw new RuntimeException("Task in homework not found");
+        HomeworkModel homeworkModel = homeworkModelDao.save(teacherId,
+                homeworkModelRequest.description());
         String numbersStr = homeworkModelRequest.description(); // "1 2 4 55 7" - если описание такое
         String[] numbersAsString = numbersStr.split(" ");
-        for (String taskIdStr : numbersAsString) {
-            HomeworkTaskRelations homeworkTaskRelations = new HomeworkTaskRelations();
-            homeworkTaskRelations.setTaskId(Long.parseLong(taskIdStr));
-            homeworkTaskRelations.setHomeworkId(homeworkModelDao.getByInfo(teacherId, homeworkModelRequest.description()));
-            homeworkTaskRelationsDao.update(homeworkTaskRelations);
-        }
+        for (String taskIdStr : numbersAsString)
+            homeworkTaskRelationsDao.save(Long.parseLong(taskIdStr), homeworkModel.getHomeworkId());
         return homeworkModel;
     }
 
-    public HomeworkUserRelations assignHomework(Long studentId, Long homeworkId) {
-        HomeworkUserRelations homeworkUserRealations = new HomeworkUserRelations();
-        homeworkUserRealations.setStudentId(studentId);
-        homeworkUserRealations.setHomeworkId(homeworkId);
-        homeworkUserRelationsDao.update(homeworkUserRealations);
-        HomeworkModel homeworkModel = homeworkModelDao.getById(homeworkId).orElseThrow();
-        assert homeworkModel.getDescription() != null;
+    public HomeworkModel assignHomework(Long studentId, Long homeworkId) {
+        if (homeworkUserRelationsDao.existsByRelation(studentId, homeworkId))
+            throw new RuntimeException("Student have this homework");
+        HomeworkModel homeworkModel = homeworkUserRelationsDao.save(studentId, homeworkId).orElseThrow();
         String[] tasks = homeworkModel.getDescription().split(" ");
         for (String task : tasks){
-            StudentAnswers studentAnswers = new StudentAnswers();
-            System.out.println(homeworkUserRealations.getHomeworkUserId() + "       15hw");
-            studentAnswers.setHomeworkUserId(homeworkUserRealations.getHomeworkUserId());
-            studentAnswers.setTaskId((long) Integer.parseInt(task));
-            studentAnswers.setStudentAnswer(null);
-            studentAnswers.setCorrect(false);
-            studentAnswersDao.update(studentAnswers);
+            studentAnswersDao.save(homeworkUserRelationsDao.getByStudentIdAndHomeworkId(studentId, homeworkId),
+                    (long) Integer.parseInt(task),
+                    null, false);
         }
-        return homeworkUserRealations;
+        return homeworkModel;
     }
 
     public StudentAnswers checkHomework(Long studentAnswersId, StudentAnswersRequest studentAnswersRequest) {
@@ -195,20 +208,15 @@ public class TeacherService {
         return statistics;
     }
 
-    public TaskModel generateErrorCorrectionTask(Long teacherId, Long studentId) {
-        return new TaskModel();
-    }
-
     public TaskModel gamifyErrorCorrectionTask(Long studentId, Long taskId) {
         TaskModel task = taskModelDao.getById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
         List<String> hobbies = hobbyModelDao.getStudentHobby(studentId);
         String hobby = hobbies.isEmpty() ? "none" : hobbies.get(new Random().nextInt(hobbies.size()));
         String gamifiedDescription = generateGamifiedDescription(task, hobby);
-        TaskModel taskModel = new TaskModel();
-        taskModel.setTitle(gamifiedDescription);
-        taskModel.setAnswer(task.getAnswer());
-        taskModel.setAuthorId(task.getAuthorId());
+        TaskModel taskModel = new TaskModel(task.getAuthorId(),
+                gamifiedDescription,
+                task.getAnswer());
         taskModelDao.update(taskModel);
         return taskModel;
     }
@@ -232,5 +240,9 @@ public class TeacherService {
                 default -> String.format("Реши увлекательную задачу '%s'!", task.getTitle());
             };
         }
+    }
+
+    public TaskModel generateErrorCorrectionTask(Long teacherId, Long studentId) {
+        return null;
     }
 }

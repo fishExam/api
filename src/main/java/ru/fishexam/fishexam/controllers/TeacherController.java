@@ -3,7 +3,22 @@ package ru.fishexam.fishexam.controllers;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import ru.fishexam.fishexam.dto.*;
+import ru.fishexam.fishexam.dto.homework.HomeworkModel;
+import ru.fishexam.fishexam.dto.homework.HomeworkModelRequest;
+import ru.fishexam.fishexam.dto.homework.HomeworkUserRelations;
+import ru.fishexam.fishexam.dto.outline.OutlineCreate;
+import ru.fishexam.fishexam.dto.outline.OutlineCreateRequest;
+import ru.fishexam.fishexam.dto.outline.OutlineStudentRelation;
+import ru.fishexam.fishexam.dto.student.StudentAnswers;
+import ru.fishexam.fishexam.dto.student.StudentAnswersRequest;
+import ru.fishexam.fishexam.dto.student.StudentProfile;
+import ru.fishexam.fishexam.dto.student.StudentStatistics;
+import ru.fishexam.fishexam.dto.task.TaskModel;
+import ru.fishexam.fishexam.dto.task.TaskModelRequest;
+import ru.fishexam.fishexam.dto.teacher.TeacherProfile;
+import ru.fishexam.fishexam.dto.teacher.TeacherProfileRequest;
+import ru.fishexam.fishexam.dto.teacher.TeacherStudentsRelations;
+import ru.fishexam.fishexam.dto.user.UserProfile;
 import ru.fishexam.fishexam.service.TeacherService;
 
 import java.util.List;
@@ -37,7 +52,7 @@ public class TeacherController {
     //Привязка ученика
     @PostMapping("/api/profile/{teacherId}/{studentId}")
     @PreAuthorize("@dataSecurityService.isOwner(#teacherId)")
-    public ResponseEntity<TeacherStudentsRelations> assignStudent(
+    public ResponseEntity<List<StudentProfile>> assignStudent(
             @PathVariable Long teacherId,
             @PathVariable Long studentId
     ){
@@ -57,7 +72,7 @@ public class TeacherController {
     //Отправка теоретических материалов ученику
     @PostMapping("/api/outline/post/{teacherId}/{studentId}/{outlineId}")
     @PreAuthorize("@dataSecurityService.isOwner(#teacherId)")
-    public ResponseEntity<OutlineStudentRelation> assignOutline(
+    public ResponseEntity<OutlineCreate> assignOutline(
             @PathVariable Long teacherId,
             @PathVariable Long studentId,
             @PathVariable Long outlineId
@@ -88,7 +103,7 @@ public class TeacherController {
     //Отправка домашних работ ученику
     @PostMapping("/api/task/post/{teacherId}/{studentId}/{homeworkId}")
     @PreAuthorize("@dataSecurityService.isOwner(#teacherId)")
-    public ResponseEntity<HomeworkUserRelations> assignHomework(
+    public ResponseEntity<HomeworkModel> assignHomework(
             @PathVariable Long teacherId,
             @PathVariable Long studentId,
             @PathVariable Long homeworkId

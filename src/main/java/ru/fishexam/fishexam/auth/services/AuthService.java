@@ -5,7 +5,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.transaction.annotation.Transactional;
 import ru.fishexam.fishexam.auth.models.RefreshToken;
 import ru.fishexam.fishexam.auth.models.UserDetailsImpl;
 import ru.fishexam.fishexam.auth.payload.request.LoginRequest;
@@ -14,7 +13,7 @@ import ru.fishexam.fishexam.auth.payload.request.TokenRefreshRequest;
 import ru.fishexam.fishexam.auth.payload.response.JwtResponse;
 import ru.fishexam.fishexam.auth.dao.UserDao;
 import ru.fishexam.fishexam.auth.security.JwtUtils;
-import ru.fishexam.fishexam.dto.UserProfile;
+import ru.fishexam.fishexam.dto.user.UserProfile;
 import ru.fishexam.fishexam.service.UserProfileService;
 
 public class AuthService {
@@ -36,7 +35,7 @@ public class AuthService {
 
     public JwtResponse authenticateUser(LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password())
+                new UsernamePasswordAuthenticationToken(loginRequest.surname(), loginRequest.password())
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -55,13 +54,13 @@ public class AuthService {
     }
 
     public UserProfile registerUser(SignupRequest signUpRequest) {
-        if (userDao.existsByUsername(signUpRequest.username())) {
+        if (userDao.existsByUsername(signUpRequest.surname())) {
             throw new RuntimeException("Error: Username is already taken!");
         }
 
         String hashedPassword = passwordEncoder.encode(signUpRequest.password());
 
-        var saved = userDao.save(signUpRequest.username(), signUpRequest.first_name(), signUpRequest.patronymic(),
+        var saved = userDao.save(signUpRequest.surname(), signUpRequest.first_name(), signUpRequest.patronymic(),
                 signUpRequest.phone(), signUpRequest.email(), signUpRequest.birth(), signUpRequest.telegram_id(),
                 hashedPassword);
         return userProfileService.createBaseProfile(saved.getUserid(), saved.getSurname(),saved.getFirst_name(),

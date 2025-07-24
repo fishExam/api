@@ -1,13 +1,13 @@
 package ru.fishexam.fishexam.auth.payload.request;
 
 import jakarta.validation.constraints.*;
-import ru.fishexam.fishexam.dto.UserRole;
+import ru.fishexam.fishexam.dto.user.UserRole;
 
 import java.time.LocalDate;
 
 public record SignupRequest(
         @NotBlank
-        String username,
+        String surname,
         @NotBlank
         String first_name,
         @NotBlank

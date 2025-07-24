@@ -1,23 +1,32 @@
 package ru.fishexam.fishexam.utils;
 
-import ru.fishexam.fishexam.dto.*;
+import ru.fishexam.fishexam.dto.hobby.HobbyModel;
+import ru.fishexam.fishexam.dto.homework.HomeworkModel;
+import ru.fishexam.fishexam.dto.homework.HomeworkModelRequest;
+import ru.fishexam.fishexam.dto.outline.OutlineCreate;
+import ru.fishexam.fishexam.dto.outline.OutlineCreateRequest;
+import ru.fishexam.fishexam.dto.student.StudentProfile;
+import ru.fishexam.fishexam.dto.student.StudentProfileRequest;
+import ru.fishexam.fishexam.dto.task.TaskModel;
+import ru.fishexam.fishexam.dto.task.TaskModelRequest;
+import ru.fishexam.fishexam.dto.teacher.TeacherProfile;
+import ru.fishexam.fishexam.dto.teacher.TeacherProfileRequest;
 
 public class CommonMappers {
     public static StudentProfile mapFromRequestStudentProfile(
             Long userId,
             StudentProfileRequest studentProfileRequest
     ) {
-        var studentProfile = new StudentProfile();
-        studentProfile.setUserId(userId);
-        studentProfile.setSurname(studentProfileRequest.surname());
-        studentProfile.setFirstName(studentProfileRequest.firstName());
-        studentProfile.setPatronymic(studentProfileRequest.patronymic());
-        studentProfile.setPhone(studentProfileRequest.phone());
-        studentProfile.setEmail(studentProfileRequest.email());
-        studentProfile.setBirth(studentProfileRequest.birth());
-        studentProfile.setTelegramId(studentProfileRequest.telegramId());
-        studentProfile.setParentId(studentProfileRequest.parentId());
-        studentProfile.setTasksCount(studentProfileRequest.tasksCount());
+        var studentProfile = new StudentProfile(userId,
+                studentProfileRequest.surname(),
+                studentProfileRequest.firstName(),
+                studentProfileRequest.patronymic(),
+                studentProfileRequest.phone(),
+                studentProfileRequest.email(),
+                studentProfileRequest.birth(),
+                studentProfileRequest.telegramId(),
+                studentProfileRequest.parentId(),
+                studentProfileRequest.tasksCount());
         return studentProfile;
     }
 
@@ -66,15 +75,14 @@ public class CommonMappers {
             Long userId,
             TeacherProfileRequest teacherProfileRequest
     ) {
-        var teacherProfile = new TeacherProfile();
-        teacherProfile.setUserId(userId);
-        teacherProfile.setSurname(teacherProfileRequest.surname());
-        teacherProfile.setFirstName(teacherProfileRequest.firstName());
-        teacherProfile.setPatronymic(teacherProfileRequest.patronymic());
-        teacherProfile.setPhone(teacherProfileRequest.phone());
-        teacherProfile.setEmail(teacherProfileRequest.email());
-        teacherProfile.setBirth(teacherProfileRequest.birth());
-        teacherProfile.setTelegramId(teacherProfileRequest.telegramId());
+        var teacherProfile = new TeacherProfile(userId,
+                teacherProfileRequest.surname(),
+                teacherProfileRequest.firstName(),
+                teacherProfileRequest.patronymic(),
+                teacherProfileRequest.phone(),
+                teacherProfileRequest.email(),
+                teacherProfileRequest.birth(),
+                teacherProfileRequest.telegramId());
         return teacherProfile;
     }
 
@@ -111,12 +119,12 @@ public class CommonMappers {
         return oldTeacherProfile;
     }
     public static OutlineCreate mapFromRequestOutlineCreate(
+            Long outlineId,
             Long teacherId,
             OutlineCreateRequest outlineCreateRequest
     ) {
-        var outlineCreate = new OutlineCreate();
-        outlineCreate.setAuthorId(teacherId);
-        outlineCreate.setTitle(outlineCreateRequest.title());
+        var outlineCreate = new OutlineCreate(outlineId, teacherId,
+        outlineCreateRequest.title());
         return outlineCreate;
     }
 
@@ -151,13 +159,13 @@ public class CommonMappers {
     }
 
     public static TaskModel mapFromRequestTaskModel(
+            Long taskId,
             Long authorId,
             TaskModelRequest taskModelRequest
     ) {
-        var taskModel = new TaskModel();
-        taskModel.setAuthorId(authorId);
-        taskModel.setTitle(taskModelRequest.title());
-        taskModel.setAnswer(taskModelRequest.answer());
+        var taskModel = new TaskModel(taskId, authorId,
+                taskModelRequest.title(),
+                taskModelRequest.answer());
         return taskModel;
     }
 
@@ -173,23 +181,4 @@ public class CommonMappers {
         }
         return oldTaskModel;
     }
-
-    public static HobbyModel mapFromRequestHobby(
-            String topic
-    ) {
-        var hobbyModel = new HobbyModel();
-        hobbyModel.setTopic(topic);
-        return hobbyModel;
-    }
-
-    public static HobbyModel mergeTwoHobbies(
-            HobbyModel oldHobbyModels,
-            HobbyModel newHobbyModels
-    ) {
-        if (newHobbyModels.getTopic() != null) {
-            oldHobbyModels.setTopic(newHobbyModels.getTopic());
-        }
-        return oldHobbyModels;
-    }
-
 }
