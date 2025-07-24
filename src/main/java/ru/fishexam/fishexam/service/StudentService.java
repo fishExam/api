@@ -1,15 +1,28 @@
 package ru.fishexam.fishexam.service;
 
-import org.springframework.transaction.annotation.Transactional;
 import ru.fishexam.fishexam.auth.dao.UserDao;
 import ru.fishexam.fishexam.auth.models.UserAuth;
-import ru.fishexam.fishexam.dao.*;
-import ru.fishexam.fishexam.dto.*;
+import ru.fishexam.fishexam.dao.hobby.HobbyModelDao;
+import ru.fishexam.fishexam.dao.hobby.HobbyStudentRelationsDao;
+import ru.fishexam.fishexam.dao.homework.HomeworkModelDao;
+import ru.fishexam.fishexam.dao.homework.HomeworkUserRelationsDao;
+import ru.fishexam.fishexam.dao.student.StudentAnswersDao;
+import ru.fishexam.fishexam.dao.student.StudentDao;
+import ru.fishexam.fishexam.dao.task.TaskModelDao;
+import ru.fishexam.fishexam.dto.hobby.HobbyModel;
+import ru.fishexam.fishexam.dto.hobby.HobbyModelRequest;
+import ru.fishexam.fishexam.dto.hobby.HobbyStudentRelations;
+import ru.fishexam.fishexam.dto.homework.HomeworkModel;
+import ru.fishexam.fishexam.dto.homework.HomeworkUserRelations;
+import ru.fishexam.fishexam.dto.student.StudentAnswers;
+import ru.fishexam.fishexam.dto.student.StudentAnswersRequest;
+import ru.fishexam.fishexam.dto.student.StudentProfile;
+import ru.fishexam.fishexam.dto.student.StudentProfileRequest;
+import ru.fishexam.fishexam.dto.task.TaskModel;
 import ru.fishexam.fishexam.utils.CommonMappers;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,16 +50,16 @@ public class StudentService {
 
     public StudentProfile createBaseStudentProfile(Long userId, String username, String first_name, String patronymic,
                                                    String phone, String email, LocalDate birth, String telegram_id) {
-        StudentProfile studentProfile = new StudentProfile();
-        studentProfile.setStudentId(userId);
-        studentProfile.setSurname(username);
-        studentProfile.setFirstName(first_name);
-        studentProfile.setPatronymic(patronymic);
-        studentProfile.setPhone(phone);
-        studentProfile.setEmail(email);
-        studentProfile.setBirth(birth);
-        studentProfile.setTelegramId(telegram_id);
-        studentProfile.setTasksCount(0);
+        StudentProfile studentProfile = new StudentProfile(
+                userId,
+                username,
+                first_name,
+                patronymic,
+                phone,
+                email,
+                birth,
+                telegram_id,
+                null, 0);
         studentDao.update(studentProfile);
         return studentProfile;
     }
@@ -55,7 +68,7 @@ public class StudentService {
         var oldProfile = getById(userId);
 
         UserAuth userAuth = userDao.findByUsername(oldProfile.getSurname()).orElseThrow();
-        System.out.println(userAuth.getPassword()+"            15");
+        System.out.println(userAuth.getPassword() + "            15");
         UserAuth userProfile = new UserAuth(userId, studentProfileRequest.surname(), studentProfileRequest.firstName(),
                 studentProfileRequest.patronymic(), studentProfileRequest.phone(), studentProfileRequest.email(),
                 studentProfileRequest.birth(), studentProfileRequest.telegramId(), userAuth.getPassword());
@@ -73,19 +86,15 @@ public class StudentService {
         return studentDao.getById(userId).orElseThrow();
     }
 
-    public HobbyStudentRelations createHobby(Long userId, HobbyModelRequest hobbyModelRequest) {
-        Optional<HobbyModel> optionalHobbyModel = hobbyModelDao.createIfNot(hobbyModelRequest.topic());
-        if (optionalHobbyModel.isEmpty()){
-            HobbyModel hobbyModel = new HobbyModel();
-            hobbyModel.setTopic(hobbyModelRequest.topic());
-            hobbyModelDao.update(hobbyModel);
-        }
-        HobbyStudentRelations hobbyStudentRelations = new HobbyStudentRelations();
-        hobbyStudentRelations.setHobbyId(hobbyModelDao.getId(hobbyModelRequest.topic()));
-        hobbyStudentRelations.setStydentId(userId);
-        hobbyStudentRelationsDao.update(hobbyStudentRelations);
-        return hobbyStudentRelations;
+    public List<HobbyModel> createHobby(Long userId, HobbyModelRequest hobbyModelRequest) {
+        hobbyModelDao.save(hobbyModelRequest.topic());
+        if (hobbyStudentRelationsDao.existsByUsername(userId, hobbyModelRequest.topic()))
+            throw new RuntimeException("Error: This student's hobby has already been created!");
+        List<HobbyModel> hobList = hobbyStudentRelationsDao.save(hobbyModelDao.getId(hobbyModelRequest.topic()),
+                userId);
+        return hobList;
     }
+
 
     public List<HomeworkModel> getAssignedHomeworks(Long userId) {
         List<HomeworkUserRelations> relations = homeworkUserRelationsDao.getByStudentId(userId);
@@ -107,7 +116,7 @@ public class StudentService {
                     }
                 }
             }
-            homework.setDescription(homework.getDescription()+ " \n " + String.join(" \n ", tasks));
+            homework.setDescription(homework.getDescription() + " \n " + String.join(" \n ", tasks));
             responses.add(homework);
         }
         return responses;

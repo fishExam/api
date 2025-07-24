@@ -169,7 +169,7 @@ public class TeacherService {
     }
 
     public StudentAnswers checkHomework(Long studentAnswersId, StudentAnswersRequest studentAnswersRequest) {
-        StudentAnswers studentAnswers = studentAnswersDao.getById(studentAnswersId).orElseThrow();
+        StudentAnswers studentAnswers = studentAnswersDao.getById(studentAnswersId).orElseThrow(()-> new RuntimeException("Task not found"));
         TaskModel task = taskModelDao.getById(studentAnswers.getTaskId())
                 .orElseThrow(() -> new RuntimeException("Task not found"));
         boolean isCorrect = task.getAnswer().trim().equalsIgnoreCase(studentAnswersRequest.studentAnswer().trim());
@@ -214,7 +214,7 @@ public class TeacherService {
         List<String> hobbies = hobbyModelDao.getStudentHobby(studentId);
         String hobby = hobbies.isEmpty() ? "none" : hobbies.get(new Random().nextInt(hobbies.size()));
         String gamifiedDescription = generateGamifiedDescription(task, hobby);
-        TaskModel taskModel = new TaskModel(task.getAuthorId(),
+        TaskModel taskModel = new TaskModel(task.getTaskId(), task.getAuthorId(),
                 gamifiedDescription,
                 task.getAnswer());
         taskModelDao.update(taskModel);
