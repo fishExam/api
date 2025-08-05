@@ -3,13 +3,13 @@ package ru.fishexam.fishexam.auth.payload.response;
 
 public class JwtResponse {
   private String token;
-  private String surname;
+  private String username;
   private Long userId;
   private String refreshToken;
 
   public JwtResponse(String token, String username, Long userId, String refreshToken) {
     this.token = token;
-    this.surname = username;
+    this.username = username;
     this.userId = userId;
     this.refreshToken = refreshToken;
   }
@@ -31,12 +31,12 @@ public class JwtResponse {
     this.token = token;
   }
 
-  public String getSurname() {
-    return surname;
+  public String getUsername() {
+    return username;
   }
 
-  public void setSurname(String surname) {
-    this.surname = surname;
+  public void setUsername(String username) {
+    this.username = username;
   }
 
   public void setUserId(Long userId) {

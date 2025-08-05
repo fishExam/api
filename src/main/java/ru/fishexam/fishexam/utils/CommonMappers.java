@@ -1,6 +1,5 @@
 package ru.fishexam.fishexam.utils;
 
-import ru.fishexam.fishexam.dto.hobby.HobbyModel;
 import ru.fishexam.fishexam.dto.homework.HomeworkModel;
 import ru.fishexam.fishexam.dto.homework.HomeworkModelRequest;
 import ru.fishexam.fishexam.dto.outline.OutlineCreate;
@@ -11,14 +10,16 @@ import ru.fishexam.fishexam.dto.task.TaskModel;
 import ru.fishexam.fishexam.dto.task.TaskModelRequest;
 import ru.fishexam.fishexam.dto.teacher.TeacherProfile;
 import ru.fishexam.fishexam.dto.teacher.TeacherProfileRequest;
+import ru.fishexam.fishexam.dto.user.UserProfile;
 
 public class CommonMappers {
     public static StudentProfile mapFromRequestStudentProfile(
             Long userId,
             StudentProfileRequest studentProfileRequest
     ) {
-        var studentProfile = new StudentProfile(userId,
-                studentProfileRequest.surname(),
+        return new StudentProfile(
+                userId,
+                studentProfileRequest.username(),
                 studentProfileRequest.firstName(),
                 studentProfileRequest.patronymic(),
                 studentProfileRequest.phone(),
@@ -26,39 +27,48 @@ public class CommonMappers {
                 studentProfileRequest.birth(),
                 studentProfileRequest.telegramId(),
                 studentProfileRequest.parentId(),
-                studentProfileRequest.tasksCount());
-        return studentProfile;
+                studentProfileRequest.tasksCount()
+        );
+    }
+
+    private static UserProfile mergeTwoUserProfile(
+            UserProfile oldUserProfile,
+            UserProfile newUserProfile
+    ) {
+        if (newUserProfile.getUsername() != null) {
+            oldUserProfile.setUsername(newUserProfile.getUsername());
+        }
+
+        if (newUserProfile.getFirstName() != null) {
+            oldUserProfile.setFirstName(newUserProfile.getFirstName());
+        }
+
+        if (newUserProfile.getPatronymic() != null) {
+            oldUserProfile.setPatronymic(newUserProfile.getPatronymic());
+        }
+        if (newUserProfile.getPhone() != null) {
+            oldUserProfile.setPhone(newUserProfile.getPhone());
+        }
+
+        if (newUserProfile.getEmail() != null) {
+            oldUserProfile.setEmail(newUserProfile.getEmail());
+        }
+
+        if (newUserProfile.getBirth() != null) {
+            oldUserProfile.setBirth(newUserProfile.getBirth());
+        }
+        if (newUserProfile.getTelegramId() != null) {
+            oldUserProfile.setTelegramId(newUserProfile.getTelegramId());
+        }
+
+        return oldUserProfile;
     }
 
     public static StudentProfile mergeTwoStudentProfile(
             StudentProfile oldStudentProfile,
             StudentProfile newStudentProfile
     ) {
-        if (newStudentProfile.getSurname() != null) {
-            oldStudentProfile.setSurname(newStudentProfile.getSurname());
-        }
-
-        if (newStudentProfile.getFirstName() != null) {
-            oldStudentProfile.setFirstName(newStudentProfile.getFirstName());
-        }
-
-        if (newStudentProfile.getPatronymic() != null) {
-            oldStudentProfile.setPatronymic(newStudentProfile.getPatronymic());
-        }
-        if (newStudentProfile.getPhone() != null) {
-            oldStudentProfile.setPhone(newStudentProfile.getPhone());
-        }
-
-        if (newStudentProfile.getEmail() != null) {
-            oldStudentProfile.setEmail(newStudentProfile.getEmail());
-        }
-
-        if (newStudentProfile.getBirth() != null) {
-            oldStudentProfile.setBirth(newStudentProfile.getBirth());
-        }
-        if (newStudentProfile.getTelegramId() != null) {
-            oldStudentProfile.setTelegramId(newStudentProfile.getTelegramId());
-        }
+        oldStudentProfile = (StudentProfile) mergeTwoUserProfile(oldStudentProfile, newStudentProfile);
 
         if (newStudentProfile.getParentId() != null) {
             oldStudentProfile.setParentId(newStudentProfile.getParentId());
@@ -75,57 +85,30 @@ public class CommonMappers {
             Long userId,
             TeacherProfileRequest teacherProfileRequest
     ) {
-        var teacherProfile = new TeacherProfile(userId,
-                teacherProfileRequest.surname(),
+        return new TeacherProfile(
+                userId,
+                teacherProfileRequest.username(),
                 teacherProfileRequest.firstName(),
                 teacherProfileRequest.patronymic(),
                 teacherProfileRequest.phone(),
                 teacherProfileRequest.email(),
                 teacherProfileRequest.birth(),
-                teacherProfileRequest.telegramId());
-        return teacherProfile;
+                teacherProfileRequest.telegramId()
+        );
     }
 
     public static TeacherProfile mergeTwoTeacherProfile(
             TeacherProfile oldTeacherProfile,
             TeacherProfile newTeacherProfile
     ) {
-        if (newTeacherProfile.getSurname() != null) {
-            oldTeacherProfile.setSurname(newTeacherProfile.getSurname());
-        }
-
-        if (newTeacherProfile.getFirstName() != null) {
-            oldTeacherProfile.setFirstName(newTeacherProfile.getFirstName());
-        }
-
-        if (newTeacherProfile.getPatronymic() != null) {
-            oldTeacherProfile.setPatronymic(newTeacherProfile.getPatronymic());
-        }
-        if (newTeacherProfile.getPhone() != null) {
-            oldTeacherProfile.setPhone(newTeacherProfile.getPhone());
-        }
-
-        if (newTeacherProfile.getEmail() != null) {
-            oldTeacherProfile.setEmail(newTeacherProfile.getEmail());
-        }
-
-        if (newTeacherProfile.getBirth() != null) {
-            oldTeacherProfile.setBirth(newTeacherProfile.getBirth());
-        }
-        if (newTeacherProfile.getTelegramId() != null) {
-            oldTeacherProfile.setTelegramId(newTeacherProfile.getTelegramId());
-        }
-
-        return oldTeacherProfile;
+        return (TeacherProfile) mergeTwoUserProfile(oldTeacherProfile, newTeacherProfile);
     }
     public static OutlineCreate mapFromRequestOutlineCreate(
             Long outlineId,
             Long teacherId,
             OutlineCreateRequest outlineCreateRequest
     ) {
-        var outlineCreate = new OutlineCreate(outlineId, teacherId,
-        outlineCreateRequest.title());
-        return outlineCreate;
+        return new OutlineCreate(outlineId, teacherId, outlineCreateRequest.title());
     }
 
     public static OutlineCreate mergeTwoOutlines(

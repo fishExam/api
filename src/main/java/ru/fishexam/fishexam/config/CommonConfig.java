@@ -1,5 +1,6 @@
 package ru.fishexam.fishexam.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,6 +40,11 @@ public class CommonConfig {
 
     @Value("${gigachat.api.url}")
     private String apiUrl;
+
+    @Bean
+    public ObjectMapper mainObjectMapper() {
+        return new ObjectMapper();
+    }
 
     @Bean
     public TeacherDao teacherDao(PostgreSqlJdbcTemplate mainDb) {
@@ -105,13 +111,17 @@ public class CommonConfig {
     }
 
     @Bean
-    public GigaChatAuthService gigaChatAuthService(CloseableHttpClient httpClient) {
-        return new GigaChatAuthService(httpClient);
+    public GigaChatAuthService gigaChatAuthService(CloseableHttpClient httpClient,  ObjectMapper mainObjectMapper) {
+        return new GigaChatAuthService(httpClient, mainObjectMapper);
     }
 
     @Bean
-    public GigaChatService gigaChatService(CloseableHttpClient httpClient, GigaChatAuthService gigaChatAuthService) {
-        return new GigaChatService(httpClient, gigaChatAuthService, apiUrl);
+    public GigaChatService gigaChatService(
+            CloseableHttpClient httpClient,
+            GigaChatAuthService gigaChatAuthService,
+            ObjectMapper mainObjectMapper
+    ) {
+        return new GigaChatService(httpClient, gigaChatAuthService, mainObjectMapper, apiUrl);
     }
 
     @Bean

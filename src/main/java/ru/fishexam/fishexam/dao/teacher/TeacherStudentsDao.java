@@ -1,11 +1,9 @@
 package ru.fishexam.fishexam.dao.teacher;
 
 import ru.fishexam.fishexam.dao.PostgreSqlJdbcTemplate;
-import ru.fishexam.fishexam.dto.hobby.HobbyModel;
 import ru.fishexam.fishexam.dto.student.StudentProfile;
 import ru.fishexam.fishexam.dto.teacher.TeacherStudentsRelations;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,7 +16,7 @@ public class TeacherStudentsDao {
         this.mainDb = mainDb;
     }
 
-    public List<StudentProfile> findStudentsByTeacher(Long username) {
+    public List<StudentProfile> findStudentsByTeacherId(Long id) {
         return mainDb.query(
                 String.format(
                         """
@@ -30,21 +28,21 @@ public class TeacherStudentsDao {
                 ),
                 (rs, num) -> new StudentProfile(
                         rs.getLong("user_id"),
-                        rs.getString("surname"),
+                        rs.getString("username"),
                         rs.getString("first_name"),
                         rs.getString("patronymic"),
                         rs.getString("phone"),
                         rs.getString("email"),
                         rs.getDate("birth").toLocalDate(),
-                        rs.getString("telegram_id"),
+                        rs.getString("telegramId"),
                         rs.getString("parent_id"),
                         rs.getInt("tasks_count")
                 ),
-                username
+                id
         );
     }
 
-    public Boolean existsByUsername(Long studentId, Long teacherId) {
+    public Boolean existsByBothIds(Long studentId, Long teacherId) {
             var count = mainDb.queryForObject(
                     String.format(
                             """
@@ -62,15 +60,17 @@ public class TeacherStudentsDao {
         public List<StudentProfile> save(TeacherStudentsRelations teacherStudentsRelations) {
             mainDb.update(
                     String.format(
-                            "INSERT INTO %s (teacher_id, student_id)" +
-                                    "VALUES (?, ?)",
+                            """
+                            INSERT INTO %s (teacher_id, student_id)
+                            VALUES (?, ?)
+                            """,
                             tableName
                     ),
                     teacherStudentsRelations.getTeacherId(),
                     teacherStudentsRelations.getStudentId()
             );
 
-            return findStudentsByTeacher(teacherStudentsRelations.getTeacherId());
+            return findStudentsByTeacherId(teacherStudentsRelations.getTeacherId());
         }
 
 

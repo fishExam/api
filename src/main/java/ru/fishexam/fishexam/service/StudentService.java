@@ -11,7 +11,6 @@ import ru.fishexam.fishexam.dao.student.StudentDao;
 import ru.fishexam.fishexam.dao.task.TaskModelDao;
 import ru.fishexam.fishexam.dto.hobby.HobbyModel;
 import ru.fishexam.fishexam.dto.hobby.HobbyModelRequest;
-import ru.fishexam.fishexam.dto.hobby.HobbyStudentRelations;
 import ru.fishexam.fishexam.dto.homework.HomeworkModel;
 import ru.fishexam.fishexam.dto.homework.HomeworkUserRelations;
 import ru.fishexam.fishexam.dto.student.StudentAnswers;
@@ -24,7 +23,6 @@ import ru.fishexam.fishexam.utils.CommonMappers;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class StudentService {
     private final UserDao userDao;
@@ -48,33 +46,42 @@ public class StudentService {
         this.studentAnswersDao = studentAnswersDao;
     }
 
-    public StudentProfile createBaseStudentProfile(Long userId, String username, String first_name, String patronymic,
-                                                   String phone, String email, LocalDate birth, String telegram_id) {
+    public StudentProfile createBaseStudentProfile(
+            String username,
+            String firstName,
+            String patronymic,
+            String phone,
+            String email,
+            LocalDate birth,
+            String telegramId
+    ) {
         StudentProfile studentProfile = new StudentProfile(
-                userId,
+                null,
                 username,
-                first_name,
+                firstName,
                 patronymic,
                 phone,
                 email,
                 birth,
-                telegram_id,
-                null, 0);
-        studentDao.update(studentProfile);
-        return studentProfile;
+                telegramId,
+                null,
+                0
+        );
+        return studentDao.save(studentProfile);
     }
 
     public StudentProfile updateStudentProfile(Long userId, StudentProfileRequest studentProfileRequest) {
         var oldProfile = getById(userId);
 
-        UserAuth userAuth = userDao.findByUsername(oldProfile.getSurname()).orElseThrow();
-        System.out.println(userAuth.getPassword() + "            15");
-        UserAuth userProfile = new UserAuth(userId, studentProfileRequest.surname(), studentProfileRequest.firstName(),
-                studentProfileRequest.patronymic(), studentProfileRequest.phone(), studentProfileRequest.email(),
-                studentProfileRequest.birth(), studentProfileRequest.telegramId(), userAuth.getPassword());
-        userDao.update(userProfile);
-        var newProfile = CommonMappers.mapFromRequestStudentProfile(userId, studentProfileRequest);
+        if (!oldProfile.getUsername().equals(studentProfileRequest.username())) {
+            UserAuth userAuth = userDao.findById(userId).orElseThrow();
 
+            userAuth.setUsername(studentProfileRequest.username());
+
+            userDao.update(userAuth);
+        }
+
+        var newProfile = CommonMappers.mapFromRequestStudentProfile(userId, studentProfileRequest);
         var updateProfile = CommonMappers.mergeTwoStudentProfile(oldProfile, newProfile);
 
         studentDao.update(updateProfile);

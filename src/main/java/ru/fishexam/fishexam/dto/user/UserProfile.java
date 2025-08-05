@@ -1,12 +1,13 @@
 package ru.fishexam.fishexam.dto.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.annotation.Nullable;
 
 import java.time.LocalDate;
 
 public class UserProfile {
     private Long userId;
-    private String surname;
+    private String username;
     private String firstName;
     @Nullable
     private String patronymic;
@@ -16,9 +17,12 @@ public class UserProfile {
     private LocalDate birth;
     private String telegramId;
 
-    public UserProfile(Long userId, String surname, String firstName, @Nullable String patronymic, String phone, @Nullable String email, LocalDate birth, String telegramId) {
+    @JsonIgnore
+    private String password;
+
+    public UserProfile(Long userId, String username, String firstName, @Nullable String patronymic, String phone, @Nullable String email, LocalDate birth, String telegramId) {
         this.userId = userId;
-        this.surname = surname;
+        this.username = username;
         this.firstName = firstName;
         this.patronymic = patronymic;
         this.phone = phone;
@@ -76,12 +80,12 @@ public class UserProfile {
         this.userId = userId;
     }
 
-    public String getSurname() {
-        return surname;
+    public String getUsername() {
+        return username;
     }
 
-    public void setSurname(String surname) {
-        this.surname = surname;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getEmail() {

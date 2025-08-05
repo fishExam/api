@@ -3,6 +3,7 @@ package ru.fishexam.fishexam.controllers;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import ru.fishexam.fishexam.dto.common.VoidAnswer;
 import ru.fishexam.fishexam.dto.homework.HomeworkModel;
 import ru.fishexam.fishexam.dto.homework.HomeworkModelRequest;
 import ru.fishexam.fishexam.dto.homework.HomeworkUserRelations;
@@ -32,7 +33,7 @@ public class TeacherController {
         this.teacherService = teacherService;
     }
 
-    @GetMapping("/api/profileTeach/{userId}")
+    @GetMapping("/api/teacher/profileTeach/{userId}")
     @PreAuthorize("@dataSecurityService.isOwner(#userId)")
     public ResponseEntity<UserProfile> userAccess(
             @PathVariable Long userId
@@ -40,7 +41,7 @@ public class TeacherController {
         return ResponseEntity.ok(teacherService.getById(userId));
     }
 
-    @PostMapping("/api/profileTeach/{userId}")
+    @PostMapping("/api/teacher/profileTeach/{userId}")
     @PreAuthorize("@dataSecurityService.isOwner(#userId)")
     public ResponseEntity<TeacherProfile> updateProfile(
             @PathVariable Long userId,
@@ -50,17 +51,18 @@ public class TeacherController {
     }
 
     //Привязка ученика
-    @PostMapping("/api/profile/{teacherId}/{studentId}")
+    @PostMapping("/api/teacher/assign/{teacherId}/{studentId}")
     @PreAuthorize("@dataSecurityService.isOwner(#teacherId)")
-    public ResponseEntity<List<StudentProfile>> assignStudent(
+    public ResponseEntity<VoidAnswer> assignStudent(
             @PathVariable Long teacherId,
             @PathVariable Long studentId
     ){
-        return ResponseEntity.ok(teacherService.assignStudent(teacherId, studentId));
+        teacherService.assignStudent(teacherId, studentId);
+        return ResponseEntity.ok(new VoidAnswer("Success"));
     }
 
     //Создание теоретических материалов
-    @PostMapping("/api/outline/create/{teacherId}")
+    @PostMapping("/api/teacher/outline/create/{teacherId}")
     @PreAuthorize("@dataSecurityService.isOwner(#teacherId)")
     public ResponseEntity<OutlineCreate> createOutline(
             @PathVariable Long teacherId,
@@ -70,7 +72,7 @@ public class TeacherController {
     }
 
     //Отправка теоретических материалов ученику
-    @PostMapping("/api/outline/post/{teacherId}/{studentId}/{outlineId}")
+    @PostMapping("/api/teacher/outline/post/{teacherId}/{studentId}/{outlineId}")
     @PreAuthorize("@dataSecurityService.isOwner(#teacherId)")
     public ResponseEntity<OutlineCreate> assignOutline(
             @PathVariable Long teacherId,
@@ -81,7 +83,7 @@ public class TeacherController {
     }
 
     //Создание задач для домашних работ
-    @PostMapping("/api/homework/task/create/{teacherId}")
+    @PostMapping("/api/teacher/homework/task/create/{teacherId}")
     @PreAuthorize("@dataSecurityService.isOwner(#teacherId)")
     public ResponseEntity<TaskModel> createTask(
             @PathVariable Long teacherId,
@@ -91,7 +93,7 @@ public class TeacherController {
     }
 
     //Создание домашних работ
-    @PostMapping("/api/homework/create/{teacherId}")
+    @PostMapping("/api/teacher/homework/create/{teacherId}")
     @PreAuthorize("@dataSecurityService.isOwner(#teacherId)")
     public ResponseEntity<HomeworkModel> createHomework(
             @PathVariable Long teacherId,
@@ -101,7 +103,7 @@ public class TeacherController {
     }
 
     //Отправка домашних работ ученику
-    @PostMapping("/api/task/post/{teacherId}/{studentId}/{homeworkId}")
+    @PostMapping("/api/teacher/task/post/{teacherId}/{studentId}/{homeworkId}")
     @PreAuthorize("@dataSecurityService.isOwner(#teacherId)")
     public ResponseEntity<HomeworkModel> assignHomework(
             @PathVariable Long teacherId,
@@ -112,7 +114,7 @@ public class TeacherController {
     }
 
     // Проверка работ
-    @PostMapping("/api/task/check/{studentAnswersId}")
+    @PostMapping("/api/teacher/task/check/{studentAnswersId}")
     public ResponseEntity<StudentAnswers> checkHomework(
             @PathVariable Long studentAnswersId,
             @RequestBody StudentAnswersRequest studentAnswersRequest
@@ -121,7 +123,7 @@ public class TeacherController {
     }
 
     //Просмотр статистики всех прикрепленных учеников
-    @GetMapping("/api/statistics/{teacherId}")
+    @GetMapping("/api/teacher/statistics/{teacherId}")
     @PreAuthorize("@dataSecurityService.isOwner(#teacherId)")
     public ResponseEntity<List<StudentStatistics>> getStudentsStatistics(
             @PathVariable Long teacherId
@@ -131,7 +133,7 @@ public class TeacherController {
 
     //Генерация работы над ошибками для каждого ученика
     // позже
-    @PostMapping("/api/error-correction/{teacherId}/{studentId}")
+    @PostMapping("/api/teacher/error-correction/{teacherId}/{studentId}")
     @PreAuthorize("@dataSecurityService.isOwner(#teacherId)")
     public ResponseEntity<TaskModel> generateErrorCorrectionTask(
             @PathVariable Long teacherId,
@@ -140,7 +142,7 @@ public class TeacherController {
     }
 
     //Геймификация сгенерированной работы над ошибками
-    @PostMapping("/api/gamification/{teacherId}/{studentId}/{taskId}")
+    @PostMapping("/api/teacher/gamification/{teacherId}/{studentId}/{taskId}")
     @PreAuthorize("@dataSecurityService.isOwner(#teacherId)")
     public ResponseEntity<TaskModel> gamifyErrorCorrectionTask(
             @PathVariable Long teacherId,

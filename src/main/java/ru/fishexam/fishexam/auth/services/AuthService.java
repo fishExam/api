@@ -14,6 +14,7 @@ import ru.fishexam.fishexam.auth.payload.response.JwtResponse;
 import ru.fishexam.fishexam.auth.dao.UserDao;
 import ru.fishexam.fishexam.auth.security.JwtUtils;
 import ru.fishexam.fishexam.dto.user.UserProfile;
+import ru.fishexam.fishexam.exceptionHandler.exception.BadRequestException;
 import ru.fishexam.fishexam.service.UserProfileService;
 
 public class AuthService {
@@ -35,7 +36,7 @@ public class AuthService {
 
     public JwtResponse authenticateUser(LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.surname(), loginRequest.password())
+                new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password())
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -54,18 +55,26 @@ public class AuthService {
     }
 
     public UserProfile registerUser(SignupRequest signUpRequest) {
-        if (userDao.existsByUsername(signUpRequest.surname())) {
-            throw new RuntimeException("Error: Username is already taken!");
+        if (userDao.existsByUsername(signUpRequest.username())) {
+            throw new BadRequestException("Username is already taken");
         }
 
         String hashedPassword = passwordEncoder.encode(signUpRequest.password());
 
-        var saved = userDao.save(signUpRequest.surname(), signUpRequest.first_name(), signUpRequest.patronymic(),
-                signUpRequest.phone(), signUpRequest.email(), signUpRequest.birth(), signUpRequest.telegram_id(),
-                hashedPassword);
-        return userProfileService.createBaseProfile(saved.getUserid(), saved.getSurname(),saved.getFirst_name(),
-                saved.getPatronymic(), saved.getPhone(), saved.getEmail(), saved.getBirth(), saved.getTelegram_id(),
-                signUpRequest.userRole());
+        var baseProfile = userProfileService.createBaseProfile(
+                signUpRequest.username(),
+                signUpRequest.firstName(),
+                signUpRequest.patronymic(),
+                signUpRequest.phone(),
+                signUpRequest.email(),
+                signUpRequest.birth(),
+                signUpRequest.telegramId(),
+                signUpRequest.userRole()
+        );
+
+        userDao.save(baseProfile.getUserId(), baseProfile.getUsername(), hashedPassword, signUpRequest.userRole());
+
+        return baseProfile;
     }
 
     public JwtResponse refreshToken(TokenRefreshRequest request) {
@@ -81,7 +90,7 @@ public class AuthService {
                     return new JwtResponse(
                             token,
                             username,
-                            user.getUserid(),
+                            user.getUserId(),
                             requestRefreshToken
                     );
                 })

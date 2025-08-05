@@ -15,13 +15,35 @@ public class UserProfileService {
         this.studentService = studentService;
     }
 
-    public UserProfile createBaseProfile(Long userId, String username, String first_name, String patronymic,
-                                         String phone, String email, LocalDate birth, String telegram_id, UserRole role) {
+    public UserProfile createBaseProfile(
+            String username,
+            String firstName,
+            String patronymic,
+            String phone,
+            String email,
+            LocalDate birth,
+            String telegramId,
+            UserRole role
+    ) {
         return switch (role) {
-            case STUDENT -> studentService.createBaseStudentProfile(userId, username, first_name, patronymic, phone,
-                    email, birth, telegram_id);
-            case TEACHER -> teacherService.createBaseTeacherProfile(userId, username, first_name, patronymic, phone,
-                    email, birth, telegram_id);
+            case STUDENT -> studentService.createBaseStudentProfile(
+                    username,
+                    firstName,
+                    patronymic,
+                    phone,
+                    email,
+                    birth,
+                    telegramId
+            );
+            case TEACHER -> teacherService.createBaseTeacherProfile(
+                    username,
+                    firstName,
+                    patronymic,
+                    phone,
+                    email,
+                    birth,
+                    telegramId
+            );
         };
     }
 }

@@ -13,7 +13,7 @@ public class OutlineCreateDao {
         this.mainDb = mainDb;
     }
 
-    public Optional<OutlineCreate> findByStudent(Long authId, String title) {
+    public Optional<OutlineCreate> findByAuthorIdAndTitle(Long authId, String title) {
         return mainDb.queryForObjectOptional(
                 String.format(
                         """
@@ -31,7 +31,7 @@ public class OutlineCreateDao {
         );
     }
 
-    public Boolean existsByUsername(Long authId, String title) {
+    public Boolean existsByIdAndTitle(Long authId, String title) {
         var count = mainDb.queryForObject(
                 String.format(
                         """
@@ -56,7 +56,7 @@ public class OutlineCreateDao {
                 authorId, title
         );
 
-        return findByStudent(authorId, title);
+        return findByAuthorIdAndTitle(authorId, title);
     }
 
     public void update(OutlineCreate outlineCreate) {

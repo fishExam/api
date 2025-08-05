@@ -16,11 +16,9 @@ import ru.fishexam.fishexam.dao.teacher.TeacherDao;
 import ru.fishexam.fishexam.dao.teacher.TeacherStudentsDao;
 import ru.fishexam.fishexam.dto.homework.HomeworkModel;
 import ru.fishexam.fishexam.dto.homework.HomeworkModelRequest;
-import ru.fishexam.fishexam.dto.homework.HomeworkTaskRelations;
 import ru.fishexam.fishexam.dto.homework.HomeworkUserRelations;
 import ru.fishexam.fishexam.dto.outline.OutlineCreate;
 import ru.fishexam.fishexam.dto.outline.OutlineCreateRequest;
-import ru.fishexam.fishexam.dto.outline.OutlineStudentRelation;
 import ru.fishexam.fishexam.dto.student.StudentAnswers;
 import ru.fishexam.fishexam.dto.student.StudentAnswersRequest;
 import ru.fishexam.fishexam.dto.student.StudentProfile;
@@ -72,29 +70,40 @@ public class TeacherService {
         this.gigaChatAuthService = gigaChatAuthService;
     }
 
-    public TeacherProfile createBaseTeacherProfile(Long userId, String username, String first_name, String patronymic,
-                                                   String phone, String email, LocalDate birth, String telegram_id) {
-        TeacherProfile teacherProfile = new TeacherProfile(userId,
+    public TeacherProfile createBaseTeacherProfile(
+            String username,
+            String first_name,
+            String patronymic,
+            String phone,
+            String email,
+            LocalDate birth,
+            String telegram_id
+    ) {
+        TeacherProfile teacherProfile = new TeacherProfile(
+                null,
                 username,
                 first_name,
                 patronymic,
                 phone,
                 email,
                 birth,
-                telegram_id);
-        return teacherProfile;
+                telegram_id
+        );
+        return teacherDao.save(teacherProfile);
     }
 
     @Transactional(transactionManager = "mainDbTransactionManager", rollbackFor = Throwable.class)
     public TeacherProfile updateTeacherProfile(Long userId, TeacherProfileRequest teacherProfileRequest) {
         var oldProfile = getById(userId);
 
-        UserAuth userAuth = userDao.findByUsername(oldProfile.getSurname()).orElseThrow();
-        System.out.println(userAuth.getPassword()+"            15");
-        UserAuth userProfile = new UserAuth(userId, teacherProfileRequest.surname(), teacherProfileRequest.firstName(),
-                teacherProfileRequest.patronymic(), teacherProfileRequest.phone(), teacherProfileRequest.email(),
-                teacherProfileRequest.birth(), teacherProfileRequest.telegramId(), userAuth.getPassword());
-        userDao.update(userProfile);
+        if (!oldProfile.getUsername().equals(teacherProfileRequest.username())) {
+            UserAuth userAuth = userDao.findById(userId).orElseThrow();
+
+            userAuth.setUsername(teacherProfileRequest.username());
+
+            userDao.update(userAuth);
+        }
+
         var newProfile = CommonMappers.mapFromRequestTeacherProfile(userId, teacherProfileRequest);
         var updateProfile = CommonMappers.mergeTwoTeacherProfile(oldProfile, newProfile);
 
@@ -108,21 +117,19 @@ public class TeacherService {
     }
 
     public List<StudentProfile> assignStudent(Long teacherId, Long studentId) {
-        if (teacherStudentsDao.existsByUsername(studentId, teacherId))
-            throw new RuntimeException("This student was already attached to the teacher");
+        if (teacherStudentsDao.existsByBothIds(studentId, teacherId)) {
+            teacherStudentsDao.findStudentsByTeacherId(teacherId);
+        }
+
         TeacherStudentsRelations teacherStudentsRelations = new TeacherStudentsRelations();
         teacherStudentsRelations.setTeacherId(teacherId);
         teacherStudentsRelations.setStudentId(studentId);
-        List<StudentProfile> students = teacherStudentsDao.save(teacherStudentsRelations);
-        return students;
+        return teacherStudentsDao.save(teacherStudentsRelations);
     }
 
     public OutlineCreate createOutline(Long teacherId, OutlineCreateRequest outlineCreateRequest) {
-        if (outlineCreateDao.existsByUsername(teacherId, outlineCreateRequest.title()))
-            throw  new RuntimeException("This title was created by a teacher");
-        OutlineCreate outlineCreate = outlineCreateDao.save(teacherId, outlineCreateRequest.title()).orElseThrow();
-        return outlineCreate;
-
+        var found = outlineCreateDao.findByAuthorIdAndTitle(teacherId, outlineCreateRequest.title());
+        return found.orElseGet(() -> outlineCreateDao.save(teacherId, outlineCreateRequest.title()).orElseThrow());
     }
 
     public OutlineCreate assignOutline(Long studentId, Long outlineId) {
@@ -196,7 +203,7 @@ public class TeacherService {
             StudentProfile student = studentDao.getById(studentId)
                     .orElseThrow(() -> new RuntimeException("Student not found"));
             stat.setFirstName(student.getFirstName());
-            stat.setSurname(student.getSurname());
+            stat.setSurname(student.getUsername());
             List<StudentAnswers> answers = studentAnswersDao.getAnswersByStudentId(studentId);
             int totalTasks = (int) answers.stream().filter(a -> a.getStudentAnswer()!=null).count();
             int correctTasks = (int) answers.stream().filter(StudentAnswers::getIsCorrect).count();
@@ -233,7 +240,7 @@ public class TeacherService {
 
         try {
             return gigaChatService.sendMessage(prompt);
-        } catch (IOException e) {
+        } catch (Exception e) {
             return switch (hobby.toLowerCase()) {
                 case "aviation" -> String.format("Представь, что ты пилот, решающий '%s', чтобы безопасно проложить маршрут! Правильный ответ: '%s'.", task.getTitle(), task.getAnswer());
                 case "music" -> String.format("Составь решение для '%s', словно это музыкальная нота!", task.getTitle());

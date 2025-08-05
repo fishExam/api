@@ -7,9 +7,9 @@ import java.time.LocalDate;
 
 public record SignupRequest(
         @NotBlank
-        String surname,
+        String username,
         @NotBlank
-        String first_name,
+        String firstName,
         @NotBlank
         String patronymic,
         @NotBlank
@@ -20,7 +20,7 @@ public record SignupRequest(
         @Past
         LocalDate birth,
         @NotBlank
-        String telegram_id,
+        String telegramId,
         @NotBlank
         String password,
         @NotNull

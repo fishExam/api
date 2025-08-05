@@ -30,15 +30,15 @@ public class StudentController {
       this.studentService = studentService;
   }
 
-  @GetMapping("/api/profileSt/{userId}")
+  @GetMapping("/api/student/profile/{userId}")
   @PreAuthorize("@dataSecurityService.isOwner(#userId)")
-  public ResponseEntity<UserProfile> userAccess(
+  public ResponseEntity<StudentProfile> getStudentProfile(
           @PathVariable Long userId
   ) {
     return ResponseEntity.ok(studentService.getById(userId));
   }
 
-  @PostMapping("/api/profileSt/{userId}")
+  @PostMapping("/api/student/profile/{userId}")
   @PreAuthorize("@dataSecurityService.isOwner(#userId)")
   public ResponseEntity<StudentProfile> updateProfile(
           @PathVariable Long userId,
@@ -47,32 +47,31 @@ public class StudentController {
     return ResponseEntity.ok(studentService.updateStudentProfile(userId, studentProfileRequest));
   }
 
-  // Добавление собственных интересов и хобби
-  @PostMapping("/api/hobby/{userId}")
+  @PostMapping("/api/student/hobby/{userId}")
   @PreAuthorize("@dataSecurityService.isOwner(#userId)")
   public ResponseEntity<List<HobbyModel>> createHobby(
           @PathVariable Long userId,
           @RequestBody HobbyModelRequest hobbyModelRequest
-          ) {
+  ) {
     return ResponseEntity.ok(studentService.createHobby(userId, hobbyModelRequest));
   }
 
   // Просмотр заданных домашних заданий
-  @GetMapping("/api/homework/{userId}")
+  @GetMapping("/api/student/homework/{userId}")
   @PreAuthorize("@dataSecurityService.isOwner(#userId)")
   public ResponseEntity<List<HomeworkModel>> getAssignedHomeworks(@PathVariable Long userId) {
     return ResponseEntity.ok(studentService.getAssignedHomeworks(userId));
   }
 
   // Просмотр собственной статистики по выполненным домашним заданиям
-  @GetMapping("/api/statisticSt/{userId}")
+  @GetMapping("/api/student/statistic/{userId}")
   @PreAuthorize("@dataSecurityService.isOwner(#userId)")
   public ResponseEntity<StudentProfile> getStudentStatistics(@PathVariable Long userId) {
     return ResponseEntity.ok(studentService.getStudentStatistics(userId));
   }
 
   // Добавление решения задачи
-  @PostMapping("/api/answer/{userId}/{homeworkId}/{taskId}")
+  @PostMapping("/api/student/answer/{userId}/{homeworkId}/{taskId}")
   @PreAuthorize("@dataSecurityService.isOwner(#userId)")
   public ResponseEntity<StudentAnswers> submitAnswer(
           @PathVariable Long userId,

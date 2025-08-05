@@ -8,57 +8,85 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import ru.fishexam.fishexam.gigachat.exHandler.GigaChatException;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-@Service
 public class GigaChatAuthService {
 
+    private static final Logger log = LoggerFactory.getLogger(GigaChatAuthService.class);
     private final CloseableHttpClient httpClient;
+    private final ObjectMapper objectMapper;
+
+    private static final String GRANT_TYPE = "client_credentials";
+    private static final String SCOPE = "GIGACHAT_API_PERS";
+
     @Value("${gigachat.client.id}")
     private String clientId;
     @Value("${gigachat.client.secret}")
     private String clientSecret;
-    private final String authUrl = "https://ngw.devices.sberbank.ru:9443/api/v2/oauth";
-    private final String rqUid = "26bb413d-ea81-4856-8fb3-6ec25ae3f0d1"; // Уникальный идентификатор
+    @Value("${gigachat.client.authUrl}")
+    private String authUrl;
+    @Value("${gigachat.client.rqUid}")
+    private String rqUid;
 
-    public GigaChatAuthService(CloseableHttpClient httpClient) {
+    public GigaChatAuthService(CloseableHttpClient httpClient, ObjectMapper objectMapper) {
         this.httpClient = httpClient;
+        this.objectMapper = objectMapper;
     }
 
-    public String getAccessToken() throws IOException {
+    public String getAccessToken() throws Exception {
+        var request = createTokenRequest();
+        return executeTokenRequest(request);
+    }
+
+    private HttpPost createTokenRequest() {
         HttpPost request = new HttpPost(authUrl);
-
-        String auth = Base64.getEncoder()
-                .encodeToString((clientId + ":" + clientSecret).getBytes());
-
-        request.setHeader("Authorization", "Basic " + auth);
+        request.setHeader("Authorization", buildBasicAuthHeader());
         request.setHeader("Content-Type", "application/x-www-form-urlencoded");
         request.setHeader("Accept", "application/json");
         request.setHeader("RqUID", rqUid);
+        request.setEntity(new StringEntity(buildPayload(), StandardCharsets.UTF_8));
+        return request;
+    }
 
-        // Параметры запроса
-        String payload = "scope=GIGACHAT_API_PERS&grant_type=client_credentials";
-        request.setEntity(new StringEntity(payload));
+    private String buildBasicAuthHeader() {
+        String credentials = String.format(
+                "%s:%s",
+                clientId,
+                clientSecret
+        );
+        return String.format(
+                "Basic  %s",
+                Base64.getEncoder().encodeToString(credentials.getBytes())
+        );
+    }
 
+    private String buildPayload() {
+        return "scope=" + SCOPE + "&grant_type=" + GRANT_TYPE;
+    }
+
+    private String executeTokenRequest(HttpPost request) throws Exception {
         try (CloseableHttpResponse response = httpClient.execute(request)) {
-            int statusCode = response.getStatusLine().getStatusCode();
-            String json = EntityUtils.toString(response.getEntity());
-            System.out.println("GigaChat API Response: " + json);
-
-            if (statusCode != 200) {
-                throw new IOException("Failed to get access token. HTTP Status: " + statusCode + ", Body: " + json);
-            }
-
-            JsonNode node = new ObjectMapper().readTree(json);
-            JsonNode tokenNode = node.get("access_token");
-            if (tokenNode == null || tokenNode.isNull()) {
-                throw new IllegalStateException("Access token not found in response: " + json);
-            }
-            return tokenNode.asText();
+            GigaChatUtils.validateResponse(log, response);
+            return parseTokenFromResponse(response);
         }
+    }
+
+
+    private String parseTokenFromResponse(CloseableHttpResponse response) throws Exception {
+        String json = EntityUtils.toString(response.getEntity());
+        JsonNode node = objectMapper.readTree(json);
+        JsonNode tokenNode = node.get("access_token");
+        if (tokenNode == null || tokenNode.isNull()) {
+            throw new GigaChatException(String.format("Access token not found in response: %s",  json));
+        }
+        return tokenNode.asText();
     }
 }

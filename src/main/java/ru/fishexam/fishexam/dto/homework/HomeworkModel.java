@@ -14,6 +14,9 @@ public class HomeworkModel {
         this.description = description;
     }
 
+    public HomeworkModel() {
+    }
+
     public Long getHomeworkId() {
         return homeworkId;
     }

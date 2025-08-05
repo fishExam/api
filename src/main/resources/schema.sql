@@ -4,22 +4,19 @@ CREATE TABLE IF NOT EXISTS user_refresh_tokens (
     expiry_date TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
+CREATE TYPE user_role AS ENUM ('parent', 'student', 'teacher');
+
 CREATE TABLE IF NOT EXISTS users (
-    user_id SERIAL PRIMARY KEY,
-    surname VARCHAR(30) NOT NULL UNIQUE,
-    first_name VARCHAR(30) NOT NULL,
-    patronymic VARCHAR(30),
-    phone VARCHAR(20) NOT NULL UNIQUE,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    birth DATE NOT NULL,
-    telegram_id VARCHAR(255) NOT NULL UNIQUE,
-    password VARCHAR(1024) NOT NULL
+     user_id BIGINT PRIMARY KEY,
+     username VARCHAR(30) NOT NULL UNIQUE,
+     password VARCHAR(1024) NOT NULL,
+     role user_role NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS parents (
     user_id SERIAL PRIMARY KEY,
-    surname VARCHAR(30) NOT NULL UNIQUE,
-    first_name VARCHAR(30) NOT NULL,
+    username VARCHAR(30) NOT NULL UNIQUE,
+    firstName VARCHAR(30) NOT NULL,
     patronymic VARCHAR(30),
     phone VARCHAR(20) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
@@ -29,8 +26,8 @@ CREATE TABLE IF NOT EXISTS parents (
 
 CREATE TABLE IF NOT EXISTS students (
     user_id SERIAL PRIMARY KEY,
-    surname VARCHAR(30) NOT NULL UNIQUE,
-    first_name VARCHAR(30) NOT NULL,
+    username VARCHAR(30) NOT NULL UNIQUE,
+    firstName VARCHAR(30) NOT NULL,
     patronymic VARCHAR(30),
     phone VARCHAR(20) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
@@ -43,8 +40,8 @@ CREATE TABLE IF NOT EXISTS students (
 
 CREATE TABLE IF NOT EXISTS teachers (
     user_id BIGSERIAL PRIMARY KEY,
-    surname VARCHAR(30) NOT NULL UNIQUE,
-    first_name VARCHAR(30) NOT NULL,
+    username VARCHAR(30) NOT NULL UNIQUE,
+    firstName VARCHAR(30) NOT NULL,
     patronymic VARCHAR(30),
     phone VARCHAR(20) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,

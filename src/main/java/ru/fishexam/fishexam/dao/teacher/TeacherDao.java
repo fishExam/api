@@ -1,8 +1,12 @@
 package ru.fishexam.fishexam.dao.teacher;
 
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import ru.fishexam.fishexam.dao.PostgreSqlJdbcTemplate;
 import ru.fishexam.fishexam.dto.teacher.TeacherProfile;
 
+import java.sql.Date;
+import java.sql.PreparedStatement;
 import java.util.Optional;
 
 public class TeacherDao {
@@ -19,7 +23,7 @@ public class TeacherDao {
                 String.format(
                         """
                         SELECT COUNT(*) from %s
-                        WHERE surname = ?
+                        WHERE username = ?
                         """,
                         tableName
                 ),
@@ -29,26 +33,55 @@ public class TeacherDao {
         return count != null && count > 0;
     }
 
+    public TeacherProfile save(TeacherProfile teacherProfile) {
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        mainDb.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(
+                    String.format(
+                            """
+                            INSERT INTO %s
+                            (username, firstName, patronymic, phone, email, birth, telegramId)
+                            VALUES (?, ?, ?, ?, ?, ?, ?)
+                            """,
+                            tableName
+                    ),
+                    new String[] {"user_id"}
+            );
+            ps.setString(1, teacherProfile.getUsername());
+            ps.setString(2, teacherProfile.getFirstName());
+            ps.setString(3, teacherProfile.getPatronymic());
+            ps.setString(4, teacherProfile.getPhone());
+            ps.setString(5, teacherProfile.getEmail());
+            ps.setDate(6, Date.valueOf(teacherProfile.getBirth()));
+            ps.setString(7, teacherProfile.getTelegramId());
+            return ps;
+        }, keyHolder);
+
+        teacherProfile.setUserId(keyHolder.getKey().longValue());
+
+        return teacherProfile;
+    }
+
     public void update(TeacherProfile teacherProfile) {
         mainDb.update(
                 String.format(
                         """
-                            INSERT INTO %s (user_id, surname, first_name, patronymic, phone, email,
-                            birth, telegram_id)
+                            INSERT INTO %s (user_id, username, firstName, patronymic, phone, email, birth, telegramId)
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                             ON CONFLICT (user_id) DO UPDATE SET
-                            surname = EXCLUDED.surname,
-                            first_name = EXCLUDED.first_name,
+                            username = EXCLUDED.username,
+                            firstName = EXCLUDED.firstName,
                             patronymic = EXCLUDED.patronymic,
                             phone = EXCLUDED.phone,
                             email = EXCLUDED.email,
                             birth = EXCLUDED.birth,
-                            telegram_id = EXCLUDED.telegram_id
+                            telegramId = EXCLUDED.telegramId
                         """,
                 tableName
                 ),
                 teacherProfile.getUserId(),
-                teacherProfile.getSurname(),
+                teacherProfile.getUsername(),
                 teacherProfile.getFirstName(),
                 teacherProfile.getPatronymic(),
                 teacherProfile.getPhone(),
@@ -69,13 +102,13 @@ public class TeacherDao {
                 ),
                 (rs, num) -> {
                     var teacherProfile = new TeacherProfile(userId,
-                            rs.getString("surname"),
-                            rs.getString("first_name"),
+                            rs.getString("username"),
+                            rs.getString("firstName"),
                             rs.getString("patronymic"),
                             rs.getString("phone"),
                             rs.getString("email"),
                             rs.getDate("birth").toLocalDate(),
-                            rs.getString("telegram_id"));
+                            rs.getString("telegramId"));
                     return teacherProfile;
                 },
                 userId

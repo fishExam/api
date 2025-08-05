@@ -24,8 +24,6 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
   private final UserDetailsServiceImpl userDetailsService;
 
-  private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
-
   public AuthTokenFilter(JwtUtils jwtUtils, UserDetailsServiceImpl userDetailsService) {
     this.jwtUtils = jwtUtils;
     this.userDetailsService = userDetailsService;
@@ -49,7 +47,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 userDetails,
                 null,
                 userDetails.getAuthorities()
-            );
+        );
 
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 

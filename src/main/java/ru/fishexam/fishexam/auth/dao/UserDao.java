@@ -1,10 +1,10 @@
 package ru.fishexam.fishexam.auth.dao;
 
-import java.time.LocalDate;
 import java.util.Optional;
 
 import ru.fishexam.fishexam.dao.PostgreSqlJdbcTemplate;
 import ru.fishexam.fishexam.auth.models.UserAuth;
+import ru.fishexam.fishexam.dto.user.UserRole;
 
 public class UserDao {
 
@@ -20,22 +20,36 @@ public class UserDao {
             String.format(
                     """
                     SELECT * from %s
-                    WHERE surname = ?
+                    WHERE username = ?
                     """,
                     tableName
             ),
             (rs, num) -> new UserAuth(
                     rs.getLong("user_id"),
-                    rs.getString("surname"),
-                    rs.getString("first_name"),
-                    rs.getString("patronymic"),
-                    rs.getString("phone"),
-                    rs.getString("email"),
-                    rs.getDate("birth").toLocalDate(),
-                    rs.getString("telegram_id"),
-                    rs.getString("password")
+                    rs.getString("username"),
+                    rs.getString("password"),
+                    UserRole.valueOf(rs.getString("user_role").toUpperCase())
             ),
             username
+    );
+  }
+
+  public Optional<UserAuth> findById(Long id) {
+    return mainDb.queryForObjectOptional(
+            String.format(
+                    """
+                    SELECT * from %s
+                    WHERE user_id = ?
+                    """,
+                    tableName
+            ),
+            (rs, num) -> new UserAuth(
+                    rs.getLong("user_id"),
+                    rs.getString("username"),
+                    rs.getString("password"),
+                    UserRole.valueOf(rs.getString("user_role").toUpperCase())
+            ),
+            id
     );
   }
 
@@ -43,7 +57,7 @@ public class UserDao {
     var count = mainDb.queryForObject(
             String.format(
                     """
-                            SELECT COUNT(*) FROM %s where surname = ?
+                            SELECT COUNT(*) FROM %s where username = ?
                     """,
                     tableName
             ),
@@ -54,55 +68,37 @@ public class UserDao {
     return count != null && count > 0;
   }
 
-  public UserAuth save(String username, String first_name, String patronymic, String phone,
-                       String email, LocalDate birth, String telegram_id, String password) {
+  public void save(Long id, String username, String password, UserRole userRole) {
     mainDb.update(
             String.format(
-                    "INSERT INTO %s (surname, first_name, patronymic, phone, email, birth, telegram_id, password)" +
-                            "VALUES (?, ?, ?, ?, ?, ?::date, ?, ?)",
+                    "INSERT INTO %s (user_id, username, password, user_role)" +
+                            "VALUES (?, ?, ?, ?)",
                     tableName
             ),
+            id,
             username,
-            first_name,
-            patronymic,
-            phone,
-            email,
-            birth,
-            telegram_id,
-            password
+            password,
+            userRole.name().toLowerCase()
     );
-
-    return findByUsername(username).orElseThrow();
   }
 
   public void update(UserAuth userAuth) {
     mainDb.update(
             String.format(
                     """
-                        INSERT INTO %s (user_id, surname, first_name, patronymic, phone, email,
-                        birth, telegram_id, password)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        INSERT INTO %s (user_id, username, password, user_role)
+                        VALUES (?, ?, ?, ?)
                         ON CONFLICT (user_id) DO UPDATE SET
-                        surname = EXCLUDED.surname,
-                        first_name = EXCLUDED.first_name,
-                        patronymic = EXCLUDED.patronymic,
-                        phone = EXCLUDED.phone,
-                        email = EXCLUDED.email,
-                        birth = EXCLUDED.birth,
-                        telegram_id = EXCLUDED.telegram_id,
-                        password = EXCLUDED.password
+                        username = EXCLUDED.username,
+                        password = EXCLUDED.password,
+                        user_role = EXCLUDED.user_role
                     """,
                     tableName
             ),
-            userAuth.getUserid(),
-            userAuth.getSurname(),
-            userAuth.getFirst_name(),
-            userAuth.getPatronymic(),
-            userAuth.getPhone(),
-            userAuth.getEmail(),
-            userAuth.getBirth(),
-            userAuth.getTelegram_id(),
-            userAuth.getPassword()
+            userAuth.getUserId(),
+            userAuth.getUsername(),
+            userAuth.getPassword(),
+            userAuth.getUserRole().name().toLowerCase()
     );
   }
 }
